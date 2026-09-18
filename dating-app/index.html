@@ -579,6 +579,97 @@
   .profile-card h3 { margin: 0; font-family: var(--font-display); font-size: 24px; font-weight: 600; }
   .profile-card p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
 
+  /* ---------- photos ---------- */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .photo-slot {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .ph-img { position: absolute; inset: 0; }
+  .photo-slot[data-status="pending"] .ph-img { opacity: .55; }
+  .photo-slot[data-status="rejected"] .ph-img { opacity: .35; filter: grayscale(.6); }
+  .ph-chip {
+    position: absolute;
+    top: 6px; left: 6px; right: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(20, 8, 14, .55);
+    color: #fff;
+    width: fit-content;
+    max-width: calc(100% - 12px);
+  }
+  .photo-slot[data-status="rejected"] .ph-chip { background: var(--accent); }
+  .ph-controls {
+    position: absolute;
+    bottom: 6px; left: 6px; right: 6px;
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .ph-btn {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(20, 8, 14, .55);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    padding: 0;
+  }
+  .ph-btn:disabled { opacity: .35; cursor: default; }
+  .ph-btn svg { width: 13px; height: 13px; }
+  .photo-add {
+    aspect-ratio: 3 / 4;
+    border-radius: 14px;
+    border: 2px dashed var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 30px;
+    font-weight: 400;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .photo-empty {
+    aspect-ratio: 3 / 4;
+    border-radius: 14px;
+    border: 1px dashed var(--line);
+    opacity: .5;
+  }
+  .preset-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .photo-preset {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    cursor: pointer;
+    padding: 0;
+  }
+  .photo-preset span {
+    position: absolute;
+    bottom: 4px; left: 0; right: 0;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+    text-align: center;
+  }
+
   /* ---------- settings ---------- */
   .settings-scroll {
     flex: 1;
@@ -977,6 +1068,11 @@
               <p id="me-sub"></p>
             </div>
           </div>
+          <div class="field">
+            <label id="label-photos">Photos (up to 6)</label>
+            <div class="photo-grid" id="photo-grid" role="group" aria-labelledby="label-photos"></div>
+            <p class="safety-note">New photos are reviewed before anyone else can see them. Use the arrows to reorder — your first photo leads your card.</p>
+          </div>
           <form id="form-profile" style="display:flex;flex-direction:column;gap:16px" novalidate>
             <div class="field">
               <label for="pf-bio">Bio</label>
@@ -1121,6 +1217,16 @@
     </div>
   </section>
 
+  <!-- ============ PHOTO PICKER SHEET ============ -->
+  <div class="sheet-backdrop" id="photo-backdrop">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="photo-title">
+      <div class="sheet-grab" aria-hidden="true"></div>
+      <h3 id="photo-title">Add a photo</h3>
+      <p class="safety-note">Prototype photo library — pick a sample shot. Every new photo goes through review before others see it.</p>
+      <div class="preset-grid" id="preset-grid"></div>
+    </div>
+  </div>
+
   <!-- ============ LEGAL SHEET ============ -->
   <div class="sheet-backdrop" id="legal-backdrop">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="legal-title">
@@ -1221,6 +1327,20 @@
 
   var HUES = [[338, 24], [262, 200], [16, 340], [152, 190], [206, 258], [42, 8]];
 
+  // Mock "photo" scenes (pure CSS, no assets). kind -> label + layered background.
+  // 'lowlight' always fails simulated moderation, so the rejected state is demonstrable.
+  var PHOTO_SCENES = {
+    sunset:   { label: "Sunset",    bg: "radial-gradient(circle at 50% 58%, rgba(255,236,179,.95) 0%, rgba(255,236,179,0) 24%), linear-gradient(180deg, #F7B267 0%, #F4845F 55%, #5C374C 100%)" },
+    coast:    { label: "Coast",     bg: "linear-gradient(180deg, #A8DADC 0%, #7FBFD4 48%, #F3E2C7 52%, #E8D3AC 100%)" },
+    forest:   { label: "Forest",    bg: "repeating-linear-gradient(100deg, rgba(20,60,40,.25) 0 8px, rgba(20,60,40,0) 8px 22px), linear-gradient(180deg, #7FB069 0%, #3E7C4F 60%, #1F4633 100%)" },
+    city:     { label: "City",      bg: "repeating-linear-gradient(90deg, rgba(255,255,255,.14) 0 6px, rgba(255,255,255,0) 6px 18px), linear-gradient(180deg, #8E9AAF 0%, #5C677D 55%, #33415C 100%)" },
+    cafe:     { label: "Café",      bg: "radial-gradient(circle at 30% 30%, rgba(255,255,255,.35) 0%, rgba(255,255,255,0) 30%), linear-gradient(160deg, #D5A374 0%, #A96F44 60%, #6B3F23 100%)" },
+    mountain: { label: "Mountain",  bg: "linear-gradient(165deg, #DCE8F4 0%, #A3B9D3 40%, #5E7B9B 70%, #3A5068 100%)" },
+    studio:   { label: "Studio",    bg: "radial-gradient(circle at 50% 40%, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 45%), linear-gradient(180deg, #C9ADA7 0%, #9A8C98 100%)" },
+    lowlight: { label: "Low light", bg: "radial-gradient(circle at 60% 35%, rgba(120,90,160,.5) 0%, rgba(120,90,160,0) 40%), linear-gradient(180deg, #2B2233 0%, #17121E 100%)" }
+  };
+  var MODERATION_MS = 2500;
+
   // people you can match with. hues -> avatar/card gradient, likesYou -> mutual like on swipe,
   // seeded -> already matched at first launch, with conversation history.
   var POOL = [
@@ -1238,16 +1358,16 @@
         "I make a mean cortado if you ever want a taste test."] },
     { id: "priya", name: "Priya", age: 27, dist: 3, job: "Ceramicist",
       bio: "I make bowls on purpose and friends by accident.",
-      interests: ["Art", "Coffee", "Yoga"], hues: [338, 24], likesYou: true,
+      interests: ["Art", "Coffee", "Yoga"], hues: [338, 24], likesYou: true, photos: [{ kind: "sunset", status: "approved" }],
       replies: ["Careful, I already like you.", "Okay, tell me more.",
         "You can come throw a pot sometime. It's messier than it looks."] },
     { id: "theo", name: "Theo", age: 29, dist: 5, job: "Chef",
       bio: "I'll cook, you pick the record.",
-      interests: ["Cooking", "Wine", "Live music"], hues: [16, 340], likesYou: false,
+      interests: ["Cooking", "Wine", "Live music"], hues: [16, 340], likesYou: false, photos: [{ kind: "cafe", status: "pending" }],
       replies: ["Ha, deal.", "What's the last great thing you ate?"] },
     { id: "amara", name: "Amara", age: 25, dist: 8, job: "Med resident",
       bio: "Runs on 6am jogs and library naps.",
-      interests: ["Running", "Books", "Dogs"], hues: [152, 190], likesYou: true,
+      interests: ["Running", "Books", "Dogs"], hues: [152, 190], likesYou: true, photos: [{ kind: "coast", status: "approved" }],
       replies: ["Ha! My schedule is chaos but I like your energy.",
         "A dog park date is objectively the best first date. Discuss.",
         "Okay you're funny. Keep going."] },
@@ -1257,7 +1377,7 @@
       replies: ["Fair point, well made.", "Which building though?"] },
     { id: "noor", name: "Noor", age: 26, dist: 12, job: "Climate researcher",
       bio: "Half in the mountains, half in spreadsheets.",
-      interests: ["Hiking", "Climbing", "Board games"], hues: [152, 190], likesYou: true,
+      interests: ["Hiking", "Climbing", "Board games"], hues: [152, 190], likesYou: true, photos: [{ kind: "mountain", status: "approved" }],
       replies: ["Counterpoint: sunrise hikes are worth it exactly once a month.",
         "I have a 7-game backlog of Cascadia. Consider this a warning.",
         "You'd survive a long hike with me. I can tell."] },
@@ -1280,7 +1400,7 @@
       replies: ["Window seat or aisle? This matters.", "Ha! Safe answer."] },
     { id: "wren", name: "Wren", age: 26, dist: 7, job: "Florist",
       bio: "Knows the meaning of every flower. Uses it for gossip.",
-      interests: ["Art", "Hiking", "Coffee"], hues: [152, 190], likesYou: true,
+      interests: ["Art", "Hiking", "Coffee"], hues: [152, 190], likesYou: true, photos: [{ kind: "forest", status: "approved" }],
       replies: ["You get yellow acacia. Look it up.",
         "Okay that made me actually laugh.",
         "Bring me a weird flower fact and I'm yours."] },
@@ -1290,7 +1410,7 @@
       replies: ["Measured twice before sending this.", "Ha. Good one."] },
     { id: "zoe", name: "Zoe", age: 25, dist: 5, job: "Grad student",
       bio: "Thesis: vibes. Methodology: playlists.",
-      interests: ["Yoga", "Books", "Live music"], hues: [262, 200], likesYou: true,
+      interests: ["Yoga", "Books", "Live music"], hues: [262, 200], likesYou: true, photos: [{ kind: "studio", status: "approved" }],
       replies: ["Peer review says: you're interesting.",
         "Adding that take to my lit review.",
         "Send me one song that never fails. Choose wisely."] }
@@ -1298,6 +1418,13 @@
 
   function personById(id) {
     for (var i = 0; i < POOL.length; i++) if (POOL[i].id === id) return POOL[i];
+    return null;
+  }
+
+  // Non-approved photos are never rendered for other users (spec non-negotiable 7).
+  function firstApprovedPhoto(person) {
+    var list = person.photos || [];
+    for (var i = 0; i < list.length; i++) if (list[i].status === "approved") return list[i];
     return null;
   }
 
@@ -1542,6 +1669,7 @@
 
   function enter(user, fresh) {
     state.user = user;
+    if (!state.user.photos) state.user.photos = [];
     if (fresh) {
       state.seen = {}; state.matches = []; state.convos = {};
       state.blocked = {}; state.reports = [];
@@ -1591,8 +1719,15 @@
     var card = el("div", "deck-card");
     card.dataset.id = p.id;
     var art = el("div", "art");
-    art.style.background = grad(p.hues, 160);
-    art.appendChild(el("span", "initials", initials(p.name)));
+    var lead = firstApprovedPhoto(p);
+    if (lead) {
+      art.style.background = PHOTO_SCENES[lead.kind].bg;
+      card.dataset.photo = "1";
+    } else {
+      art.style.background = grad(p.hues, 160);
+      art.appendChild(el("span", "initials", initials(p.name)));
+      card.dataset.photo = "0";
+    }
     card.appendChild(art);
     card.appendChild(el("div", "scrim"));
 
@@ -1736,6 +1871,10 @@
   function updateBadges() {
     var unread = state.matches.some(function (m) { return m.unread && !state.blocked[m.id]; });
     $("dot-matches").classList.toggle("show", unread);
+    var rejected = !!state.user && (state.user.photos || []).some(function (ph) {
+      return ph.status === "rejected";
+    });
+    $("dot-profile").classList.toggle("show", rejected);
   }
 
   /* ---------------- matches list ---------------- */
@@ -2015,6 +2154,136 @@
     if (state.activeChat) openSafety(state.activeChat);
   });
 
+  /* ---------------- profile photos & moderation ---------------- */
+
+  function ensurePhotos() {
+    if (state.user && !state.user.photos) state.user.photos = [];
+    return state.user ? state.user.photos : [];
+  }
+
+  function scheduleModeration(photoId) {
+    setTimeout(function () {
+      if (!state.user) return;
+      var photos = ensurePhotos();
+      var photo = null;
+      for (var i = 0; i < photos.length; i++) if (photos[i].id === photoId) photo = photos[i];
+      if (!photo || photo.status !== "pending") return;
+      if (photo.kind === "lowlight") {
+        photo.status = "rejected";
+        photo.reason = "Too dark to verify";
+        toast("A photo was rejected in review");
+      } else {
+        photo.status = "approved";
+        toast("Photo approved");
+      }
+      save();
+      updateBadges();
+      if ($("view-profile").classList.contains("active")) renderPhotos();
+    }, MODERATION_MS);
+  }
+
+  function addPhoto(kind) {
+    var photos = ensurePhotos();
+    if (photos.length >= 6) { toast("Up to 6 photos"); return; }
+    var photo = { id: "ph" + Date.now() + Math.floor(Math.random() * 1000), kind: kind, status: "pending", at: Date.now() };
+    photos.push(photo);
+    save();
+    $("photo-backdrop").classList.remove("open");
+    renderPhotos();
+    scheduleModeration(photo.id);
+  }
+
+  function movePhoto(idx, delta) {
+    var photos = ensurePhotos();
+    var j = idx + delta;
+    if (j < 0 || j >= photos.length) return;
+    var tmp = photos[idx]; photos[idx] = photos[j]; photos[j] = tmp;
+    save();
+    renderPhotos();
+  }
+
+  function removePhoto(idx) {
+    ensurePhotos().splice(idx, 1);
+    save();
+    updateBadges();
+    renderPhotos();
+  }
+
+  function renderPhotos() {
+    var grid = $("photo-grid");
+    grid.textContent = "";
+    var photos = ensurePhotos();
+    photos.forEach(function (photo, idx) {
+      var slot = el("div", "photo-slot");
+      slot.dataset.status = photo.status;
+      slot.dataset.kind = photo.kind;
+      var img = el("div", "ph-img");
+      img.style.background = PHOTO_SCENES[photo.kind].bg;
+      slot.appendChild(img);
+      if (photo.status === "pending") slot.appendChild(el("span", "ph-chip", "In review"));
+      else if (photo.status === "rejected") slot.appendChild(el("span", "ph-chip", "Rejected — " + (photo.reason || "not allowed")));
+      else if (idx === 0) slot.appendChild(el("span", "ph-chip", "Main"));
+
+      var controls = el("div", "ph-controls");
+      var left = el("button", "ph-btn ph-left");
+      left.type = "button";
+      left.setAttribute("aria-label", "Move photo earlier");
+      left.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+      left.disabled = idx === 0;
+      left.addEventListener("click", function () { movePhoto(idx, -1); });
+      var right = el("button", "ph-btn ph-right");
+      right.type = "button";
+      right.setAttribute("aria-label", "Move photo later");
+      right.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+      right.disabled = idx === photos.length - 1;
+      right.addEventListener("click", function () { movePhoto(idx, 1); });
+      var rm = el("button", "ph-btn ph-remove");
+      rm.type = "button";
+      rm.setAttribute("aria-label", "Remove photo");
+      rm.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+      rm.addEventListener("click", function () { removePhoto(idx); });
+      controls.appendChild(left);
+      controls.appendChild(rm);
+      controls.appendChild(right);
+      slot.appendChild(controls);
+      grid.appendChild(slot);
+    });
+    if (photos.length < 6) {
+      var add = el("button", "photo-add", "+");
+      add.type = "button";
+      add.setAttribute("aria-label", "Add a photo");
+      add.addEventListener("click", openPhotoPicker);
+      grid.appendChild(add);
+    }
+    for (var i = photos.length + (photos.length < 6 ? 1 : 0); i < 6; i++) {
+      grid.appendChild(el("div", "photo-empty"));
+    }
+  }
+
+  function openPhotoPicker() {
+    var box = $("preset-grid");
+    box.textContent = "";
+    Object.keys(PHOTO_SCENES).forEach(function (kind) {
+      var b = el("button", "photo-preset");
+      b.type = "button";
+      b.dataset.kind = kind;
+      b.style.background = PHOTO_SCENES[kind].bg;
+      b.appendChild(el("span", null, PHOTO_SCENES[kind].label));
+      b.addEventListener("click", function () { addPhoto(kind); });
+      box.appendChild(b);
+    });
+    $("photo-backdrop").classList.add("open");
+  }
+  $("photo-backdrop").addEventListener("click", function (ev) {
+    if (ev.target === $("photo-backdrop")) $("photo-backdrop").classList.remove("open");
+  });
+
+  function resumeModeration() {
+    ensurePhotos().forEach(function (photo) {
+      if (photo.status === "pending") scheduleModeration(photo.id);
+    });
+  }
+
   /* ---------------- settings & compliance ---------------- */
 
   var LEGAL = {
@@ -2121,6 +2390,7 @@
 
   function renderProfile() {
     var u = state.user;
+    renderPhotos();
     setAvatar($("me-avatar"), u.name, u.hues);
     $("me-name").textContent = u.name + ", " + u.age;
     $("me-sub").textContent = u.email || "Prototype account";
@@ -2149,6 +2419,7 @@
     showScreen("screen-app");
     showTab("discover");
     updateBadges();
+    resumeModeration();
   }
 })();
 </script>

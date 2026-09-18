@@ -14,6 +14,7 @@ const suites = [
   'test-chat.js',
   'test-safety.js',
   'test-settings.js',
+  'test-photos.js',
 ];
 
 const failed = [];

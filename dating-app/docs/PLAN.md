@@ -51,7 +51,7 @@ Rules that keep it usable:
 | # | Feature (spec 01) | Prototype status | Test script | Prototype divergence from spec |
 |---|-------------------|------------------|-------------|-------------------------------|
 | 1 | Signup/login + session persistence | Done | `test-auth.js` | Mock email+password instead of phone OTP; no token refresh |
-| 2 | Profile (name, age, bio, interests) | Done | `test-profile.js` | Gradient avatar instead of 1–6 photos; no photo moderation states |
+| 2 | Profile (name, age, bio, interests, 1–6 photos with reorder + moderation) | Done | `test-profile.js`, `test-photos.js` | Photos come from a mock sample library (real uploads need a backend); moderation is simulated (~2.5s, "Low light" always rejected) |
 | 3 | Preferences (age range, distance, interests) | Done | `test-filters.js` | Interests filter is an extra; spec has genders-shown instead |
 | 4 | Discovery deck (gesture + button swipes, rounded km, empty state) | Done | `test-discovery.js` | Mock candidate pool, no geo backend |
 | 5 | Match on mutual like (modal → chat) | Done | `test-matching.js` | Mutual likes pre-flagged in mock data |
@@ -76,9 +76,12 @@ undo/rewind, "who liked you", verification badges, ML feed controls, Android/iPa
   (also linked at signup), support contact, data export (full account as JSON),
   logout, and in-app account deletion behind an explicit confirmation, distinct from
   logout. Shipped with `test-settings.js` (10 tests).
-- **M4 — Profile photos.** 1–6 photo slots with reorder and owner-visible
-  pending/rejected moderation states (simulated moderation in the prototype). Extend
-  `test-profile.js`.
+- **M4 — Profile photos. ✅ Done.** 6-slot photo grid on the Profile tab with a sample-photo
+  picker, arrow reorder (first photo leads the card), and simulated moderation: new photos
+  are owner-visible as "In review", then approved or rejected ("Low light" always rejects,
+  deterministically, so the state is demonstrable); a rejection dots the Profile tab until
+  removed; pending review resumes across reloads. Candidate cards render only approved
+  photos and fall back to initials otherwise. Shipped with `test-photos.js` (10 tests).
 - **M5 — Spec alignment pass.** When `02-api-contract.md` and `03-data-models.md` arrive:
   rename prototype state/fields to the contract's names (`onboarding_state`,
   `distance_km`, …) so the prototype and future client speak the same language. Full
@@ -96,7 +99,7 @@ undo/rewind, "who liked you", verification badges, ML feed controls, Android/iPa
 | Real in-app account deletion | Done — guarded by `test-settings.js` |
 | Privacy policy + ToS at signup and in settings | Done — guarded by `test-settings.js` |
 | Never render precise location (rounded km only) | Done — guarded by `test-discovery.js` |
-| Photos render only when approved | M4 |
+| Photos render only when approved | Done — guarded by `test-photos.js` |
 
 ## How to verify any change
 

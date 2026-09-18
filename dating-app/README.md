@@ -19,6 +19,9 @@ It covers the full V1 flow with mock data only — nothing leaves your browser:
 - **Chat** — per-match messaging with canned auto-replies (and a typing
   indicator) so the prototype feels alive.
 - **Profile** — edit your bio, interests, and profile color; log out to reset.
+- **Photos** — up to 6 sample photos with arrow reorder; new photos sit "In
+  review" (simulated moderation) and others only ever see approved ones. A
+  rejected photo dots the Profile tab until you remove it.
 - **Safety** — report (with reason picker and moderation notice) or block any
   profile from its deck card, match row, or chat header; blocking is immediate,
   both directions, and permanent.
@@ -54,6 +57,7 @@ feature can't silently break an existing one:
 | `test-chat.js` | Conversation list, unread badges, sending, auto-reply, persistence |
 | `test-safety.js` | Report (reason picker, 24h moderation notice) and block from deck, match row, and chat |
 | `test-settings.js` | Settings screen, legal docs (settings + signup), notification toggle, data export, account deletion |
+| `test-photos.js` | Photo grid (add/reorder/remove/cap), simulated moderation states, rejection badge, approved-only rendering on cards |
 
 Run them all (must be green before merging any change — see `docs/PLAN.md`):
 
