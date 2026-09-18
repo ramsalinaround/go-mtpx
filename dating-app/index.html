@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<!-- ARTIFACT-BODY-START -->
+<title>Kindred</title>
+<style>
+  :root {
+    --bg: #FBF6F3;
+    --surface: #FFFFFF;
+    --surface-2: #F4EAE7;
+    --ink: #281820;
+    --muted: #7D6672;
+    --line: #E9DAD6;
+    --accent: #D93A63;
+    --accent-soft: #FBE3EA;
+    --accent-ink: #FFFFFF;
+    --amber: #EFA23F;
+    --pass: #8A7B84;
+    --shadow: 0 10px 30px rgba(40, 24, 32, .12);
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-body: "Karla", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1B1117;
+      --surface: #271A21;
+      --surface-2: #31222B;
+      --ink: #F5EAEF;
+      --muted: #A98F9C;
+      --line: #3D2B35;
+      --accent: #F0537D;
+      --accent-soft: #43222E;
+      --accent-ink: #FFF6F8;
+      --amber: #F0AC55;
+      --pass: #8A7B84;
+      --shadow: 0 10px 30px rgba(0, 0, 0, .45);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1B1117;
+    --surface: #271A21;
+    --surface-2: #31222B;
+    --ink: #F5EAEF;
+    --muted: #A98F9C;
+    --line: #3D2B35;
+    --accent: #F0537D;
+    --accent-soft: #43222E;
+    --accent-ink: #FFF6F8;
+    --amber: #F0AC55;
+    --pass: #8A7B84;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  }
+
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.45;
+  }
+  * { box-sizing: border-box; }
+  button { font-family: inherit; font-size: inherit; color: inherit; }
+  input, textarea, select { font-family: inherit; font-size: inherit; color: var(--ink); }
+  :is(button, input, textarea, select, a):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  }
+
+  /* ---------- shell ---------- */
+  #frame {
+    height: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  @media (min-width: 520px) {
+    body { padding-block: 24px; }
+    #frame {
+      height: calc(100% - 48px);
+      min-height: 620px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+  }
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    background: var(--bg);
+  }
+  .screen.active { display: flex; }
+
+  /* ---------- shared bits ---------- */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 700;
+    letter-spacing: .01em;
+    cursor: pointer;
+    transition: transform .12s ease, opacity .12s ease;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn.ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  .btn.quiet {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .field input, .field select, .field textarea {
+    padding: 13px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .field textarea { resize: none; min-height: 92px; }
+  .form-row { display: flex; gap: 12px; }
+  .form-row > .field { flex: 1; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background .12s ease, border-color .12s ease;
+  }
+  .chip[aria-pressed="true"] {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .tag {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, .22);
+    color: #fff;
+    backdrop-filter: blur(4px);
+  }
+  .avatar {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 600;
+    flex: none;
+    user-select: none;
+  }
+  .icon { width: 22px; height: 22px; flex: none; }
+
+  /* ---------- auth ---------- */
+  .auth-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 24px calc(28px + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+  }
+  .auth-top { display: flex; align-items: center; gap: 8px; min-height: 32px; }
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    padding: 6px 8px 6px 0;
+    color: var(--muted);
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 44px;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .wordmark .tilt { color: var(--accent); font-style: italic; }
+  .welcome-hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+    text-align: center;
+    align-items: center;
+  }
+  .welcome-mark {
+    width: 84px; height: 84px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, var(--accent), var(--amber));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow);
+  }
+  .welcome-mark svg { width: 44px; height: 44px; }
+  .tagline { color: var(--muted); font-size: 17px; max-width: 30ch; margin: 0; text-wrap: balance; }
+  .auth-actions { display: flex; flex-direction: column; gap: 12px; }
+  .auth-form { display: flex; flex-direction: column; gap: 16px; margin-top: 18px; }
+  .auth-title {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 600;
+    margin: 18px 0 0;
+    text-wrap: balance;
+  }
+  .auth-sub { color: var(--muted); margin: 6px 0 0; }
+  .form-error { color: var(--accent); font-weight: 700; font-size: 14px; min-height: 20px; margin: 0; }
+  .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+  .swatch {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    padding: 0;
+  }
+  .swatch[aria-pressed="true"] { border-color: var(--ink); }
+
+  /* ---------- app shell ---------- */
+  .app-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 20px 10px;
+  }
+  .app-head .wordmark { font-size: 26px; }
+  .head-title { font-family: var(--font-display); font-size: 26px; font-weight: 600; margin: 0; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    cursor: pointer;
+  }
+  .icon-btn .icon { width: 20px; height: 20px; }
+  .views { flex: 1; position: relative; min-height: 0; }
+  .view {
+    position: absolute; inset: 0;
+    display: none;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .view.active { display: flex; }
+  .tabbar {
+    display: flex;
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+    padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+  .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 0 6px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    cursor: pointer;
+    position: relative;
+  }
+  .tab.active { color: var(--accent); }
+  .tab .dot {
+    position: absolute;
+    top: 6px; right: calc(50% - 16px);
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: none;
+  }
+  .tab .dot.show { display: block; }
+
+  /* ---------- discover / deck ---------- */
+  .deck-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 20px 16px;
+    min-height: 0;
+  }
+  .deck {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+  }
+  .deck-card {
+    position: absolute; inset: 0;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    touch-action: none;
+    user-select: none;
+    transition: transform .18s ease, opacity .18s ease;
+  }
+  .deck-card.dragging { transition: none; }
+  .deck-card.under { transform: scale(.95) translateY(12px); }
+  .deck-card .art {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .deck-card .art .initials {
+    font-family: var(--font-display);
+    font-size: 120px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, .5);
+  }
+  .deck-card .scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(20, 8, 14, 0) 45%, rgba(20, 8, 14, .78) 100%);
+  }
+  .card-info {
+    position: relative;
+    padding: 18px 20px 20px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .card-name {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .card-name .age { font-family: var(--font-body); font-size: 20px; font-weight: 400; opacity: .9; font-variant-numeric: tabular-nums; }
+  .card-meta { display: flex; align-items: center; gap: 6px; font-size: 14px; opacity: .9; margin: 0; }
+  .card-meta .icon { width: 15px; height: 15px; }
+  .card-bio { margin: 0; font-size: 15px; opacity: .95; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .stamp {
+    position: absolute;
+    top: 26px;
+    padding: 6px 16px;
+    border: 3px solid;
+    border-radius: 10px;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    opacity: 0;
+    background: rgba(20, 8, 14, .25);
+  }
+  .stamp.like { left: 20px; color: #5ce09a; border-color: #5ce09a; transform: rotate(-12deg); }
+  .stamp.nope { right: 20px; color: #ff7a7a; border-color: #ff7a7a; transform: rotate(12deg); }
+  .deck-empty {
+    position: absolute; inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+    padding: 24px;
+    color: var(--muted);
+  }
+  .deck-empty h3 { font-family: var(--font-display); font-size: 24px; color: var(--ink); margin: 0; }
+  .deck-empty p { margin: 0; max-width: 28ch; }
+  .deck-actions {
+    display: flex;
+    justify-content: center;
+    gap: 26px;
+    padding-top: 16px;
+  }
+  .act {
+    width: 62px; height: 62px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform .12s ease;
+  }
+  .act:active { transform: scale(.9); }
+  .act.pass svg { color: var(--pass); }
+  .act.like { background: var(--accent); border-color: var(--accent); }
+  .act.like svg { color: var(--accent-ink); }
+  .act svg { width: 28px; height: 28px; }
+
+  /* ---------- matches ---------- */
+  .match-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .match-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    border-radius: 18px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+  }
+  .match-row:hover { background: var(--surface-2); }
+  .match-row .avatar { width: 56px; height: 56px; font-size: 22px; }
+  .match-row .col { flex: 1; min-width: 0; }
+  .match-row .name { font-weight: 700; font-size: 17px; margin: 0; }
+  .match-row .preview {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .match-row .when { color: var(--muted); font-size: 12px; flex: none; }
+  .match-row .unread {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex: none;
+    display: none;
+  }
+  .match-row .unread.show { display: block; }
+  .empty-note {
+    text-align: center;
+    color: var(--muted);
+    padding: 48px 24px;
+  }
+  .empty-note h3 { font-family: var(--font-display); color: var(--ink); font-size: 22px; margin: 0 0 6px; }
+  .empty-note p { margin: 0; }
+  .new-strip { display: flex; gap: 14px; padding: 4px 20px 14px; overflow-x: auto; }
+  .new-strip:empty { display: none; }
+  .new-face { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; }
+  .new-face .avatar { width: 60px; height: 60px; font-size: 24px; border: 3px solid var(--accent); }
+  .new-face span { font-size: 12px; font-weight: 700; color: var(--ink); }
+  .section-label {
+    padding: 6px 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ---------- chat ---------- */
+  .chat-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .chat-head .avatar { width: 42px; height: 42px; font-size: 17px; }
+  .chat-head .col { flex: 1; min-width: 0; }
+  .chat-head .name { margin: 0; font-weight: 700; }
+  .chat-head .sub { margin: 0; font-size: 12px; color: var(--muted); }
+  .chat-log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .bubble {
+    max-width: 78%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 15px;
+  }
+  .bubble.them {
+    align-self: flex-start;
+    background: var(--surface-2);
+    border-bottom-left-radius: 6px;
+  }
+  .bubble.me {
+    align-self: flex-end;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-bottom-right-radius: 6px;
+  }
+  .bubble .t { display: block; font-size: 11px; opacity: .65; margin-top: 3px; }
+  .bubble.typing { color: var(--muted); font-style: italic; }
+  .chat-day { align-self: center; font-size: 12px; color: var(--muted); padding: 6px 0; }
+  .composer {
+    display: flex;
+    gap: 10px;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .composer input {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .composer .send {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex: none;
+  }
+  .composer .send:disabled { opacity: .45; cursor: default; }
+  .composer .send svg { width: 20px; height: 20px; }
+
+  /* ---------- profile ---------- */
+  .profile-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .profile-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px;
+    border-radius: 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  .profile-card .avatar { width: 72px; height: 72px; font-size: 28px; }
+  .profile-card h3 { margin: 0; font-family: var(--font-display); font-size: 24px; font-weight: 600; }
+  .profile-card p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+
+  /* ---------- sheets & overlays ---------- */
+  .sheet-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(20, 8, 14, .45);
+    display: none;
+    align-items: flex-end;
+    z-index: 30;
+  }
+  .sheet-backdrop.open { display: flex; }
+  .sheet {
+    width: 100%;
+    background: var(--bg);
+    border-radius: 24px 24px 0 0;
+    padding: 10px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-height: 85%;
+    overflow-y: auto;
+  }
+  .sheet-grab { width: 44px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto; }
+  .sheet h3 { font-family: var(--font-display); font-size: 24px; font-weight: 600; margin: 0; }
+  .range-field { display: flex; flex-direction: column; gap: 8px; }
+  .range-field .row { display: flex; justify-content: space-between; align-items: baseline; }
+  .range-field output { font-weight: 700; font-variant-numeric: tabular-nums; }
+  input[type="range"] { accent-color: var(--accent); width: 100%; }
+  .match-overlay {
+    position: absolute; inset: 0;
+    z-index: 40;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 32px;
+    text-align: center;
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(239, 162, 63, .5), transparent 60%),
+      linear-gradient(160deg, #b32047, #5c1030 80%);
+    color: #fff;
+  }
+  .match-overlay.open { display: flex; }
+  .match-overlay h2 {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 46px;
+    font-weight: 600;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .match-overlay p { margin: 0; opacity: .9; max-width: 30ch; }
+  .match-faces { display: flex; }
+  .match-faces .avatar {
+    width: 96px; height: 96px;
+    font-size: 38px;
+    border: 4px solid #fff;
+  }
+  .match-faces .avatar + .avatar { margin-left: -18px; }
+  .match-overlay .btn { max-width: 280px; }
+  .match-overlay .btn.ghost { color: #fff; border-color: rgba(255, 255, 255, .5); }
+  #toast {
+    position: absolute;
+    left: 50%;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%) translateY(8px);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+    z-index: 50;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,600&family=Karla:wght@400;700;800&display=swap">
+
+<div id="frame">
+
+  <!-- ============ WELCOME ============ -->
+  <section class="screen active" id="screen-welcome" aria-label="Welcome">
+    <div class="auth-wrap">
+      <div class="welcome-hero">
+        <div class="welcome-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7.5-4.7-10-9.3C.4 8.7 2 5 5.5 5c2 0 3.4 1.1 4.2 2.4C10 8.7 10.7 10 12 10s2-1.3 2.3-2.6C15.1 6.1 16.5 5 18.5 5 22 5 23.6 8.7 22 11.7 19.5 16.3 12 21 12 21z"/></svg>
+        </div>
+        <h1 class="wordmark">kin<span class="tilt">dred</span></h1>
+        <p class="tagline">Meet people who feel familiar. Fewer swipes, better conversations.</p>
+      </div>
+      <div class="auth-actions">
+        <button class="btn" id="btn-goto-signup">Create account</button>
+        <button class="btn ghost" id="btn-goto-login">Log in</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SIGN UP ============ -->
+  <section class="screen" id="screen-signup" aria-label="Sign up">
+    <div class="auth-wrap">
+      <div class="auth-top">
+        <button class="back-btn" data-back="screen-welcome">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          Back
+        </button>
+      </div>
+      <h2 class="auth-title">First, the basics</h2>
+      <p class="auth-sub">This is a prototype — nothing leaves your browser.</p>
+      <form class="auth-form" id="form-signup" novalidate>
+        <div class="form-row">
+          <div class="field">
+            <label for="su-name">First name</label>
+            <input id="su-name" type="text" autocomplete="given-name" placeholder="Alex">
+          </div>
+          <div class="field" style="max-width:96px">
+            <label for="su-age">Age</label>
+            <input id="su-age" type="number" min="18" max="99" inputmode="numeric" placeholder="27">
+          </div>
+        </div>
+        <div class="field">
+          <label for="su-email">Email</label>
+          <input id="su-email" type="email" autocomplete="email" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label for="su-password">Password</label>
+          <input id="su-password" type="password" autocomplete="new-password" placeholder="At least 6 characters">
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="su-gender">I am</label>
+            <select id="su-gender">
+              <option>Woman</option>
+              <option>Man</option>
+              <option>Non-binary</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="su-pref">Show me</label>
+            <select id="su-pref">
+              <option>Everyone</option>
+              <option>Women</option>
+              <option>Men</option>
+              <option>Non-binary people</option>
+            </select>
+          </div>
+        </div>
+        <p class="form-error" id="su-error" role="alert"></p>
+        <button class="btn" type="submit">Continue</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ PROFILE SETUP ============ -->
+  <section class="screen" id="screen-setup" aria-label="Profile setup">
+    <div class="auth-wrap">
+      <div class="auth-top">
+        <button class="back-btn" data-back="screen-signup">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          Back
+        </button>
+      </div>
+      <h2 class="auth-title">Make it yours</h2>
+      <p class="auth-sub">A short bio and a few interests go a long way.</p>
+      <form class="auth-form" id="form-setup" novalidate>
+        <div class="field">
+          <label for="set-bio">Bio</label>
+          <textarea id="set-bio" maxlength="160" placeholder="Sunday market regular. Will judge you kindly by your coffee order."></textarea>
+        </div>
+        <div class="field">
+          <label id="label-setup-interests">Interests (pick at least 3)</label>
+          <div class="chips" id="setup-interests" role="group" aria-labelledby="label-setup-interests"></div>
+        </div>
+        <div class="field">
+          <label id="label-setup-swatch">Profile color</label>
+          <div class="swatches" id="setup-swatches" role="group" aria-labelledby="label-setup-swatch"></div>
+        </div>
+        <p class="form-error" id="set-error" role="alert"></p>
+        <button class="btn" type="submit">Start matching</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ LOG IN ============ -->
+  <section class="screen" id="screen-login" aria-label="Log in">
+    <div class="auth-wrap">
+      <div class="auth-top">
+        <button class="back-btn" data-back="screen-welcome">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          Back
+        </button>
+      </div>
+      <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-sub">Any email and password work — it's all pretend.</p>
+      <form class="auth-form" id="form-login" novalidate>
+        <div class="field">
+          <label for="li-email">Email</label>
+          <input id="li-email" type="email" autocomplete="email" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label for="li-password">Password</label>
+          <input id="li-password" type="password" autocomplete="current-password" placeholder="••••••••">
+        </div>
+        <p class="form-error" id="li-error" role="alert"></p>
+        <button class="btn" type="submit">Log in</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ MAIN APP ============ -->
+  <section class="screen" id="screen-app" aria-label="Kindred">
+    <div class="views">
+
+      <div class="view active" id="view-discover">
+        <header class="app-head">
+          <h1 class="wordmark">kin<span class="tilt">dred</span></h1>
+          <button class="icon-btn" id="btn-filters" aria-label="Discovery filters">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+          </button>
+        </header>
+        <div class="deck-area">
+          <div class="deck" id="deck"></div>
+          <div class="deck-actions">
+            <button class="act pass" id="btn-pass" aria-label="Pass">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+            <button class="act like" id="btn-like" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.7-10-9.3C.4 8.7 2 5 5.5 5c2 0 3.4 1.1 4.2 2.4C10 8.7 10.7 10 12 10s2-1.3 2.3-2.6C15.1 6.1 16.5 5 18.5 5 22 5 23.6 8.7 22 11.7 19.5 16.3 12 21 12 21z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="view" id="view-matches">
+        <header class="app-head">
+          <h2 class="head-title">Matches</h2>
+        </header>
+        <div id="new-matches-wrap">
+          <p class="section-label" id="label-new-matches" hidden>New matches</p>
+          <div class="new-strip" id="new-strip"></div>
+        </div>
+        <p class="section-label">Messages</p>
+        <div class="match-list" id="match-list"></div>
+      </div>
+
+      <div class="view" id="view-profile">
+        <header class="app-head">
+          <h2 class="head-title">Profile</h2>
+        </header>
+        <div class="profile-scroll">
+          <div class="profile-card">
+            <div class="avatar" id="me-avatar"></div>
+            <div>
+              <h3 id="me-name"></h3>
+              <p id="me-sub"></p>
+            </div>
+          </div>
+          <form id="form-profile" style="display:flex;flex-direction:column;gap:16px" novalidate>
+            <div class="field">
+              <label for="pf-bio">Bio</label>
+              <textarea id="pf-bio" maxlength="160"></textarea>
+            </div>
+            <div class="field">
+              <label id="label-pf-interests">Interests</label>
+              <div class="chips" id="pf-interests" role="group" aria-labelledby="label-pf-interests"></div>
+            </div>
+            <div class="field">
+              <label id="label-pf-swatch">Profile color</label>
+              <div class="swatches" id="pf-swatches" role="group" aria-labelledby="label-pf-swatch"></div>
+            </div>
+            <button class="btn quiet" type="submit">Save changes</button>
+          </form>
+          <button class="btn ghost" id="btn-logout">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            Log out
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <nav class="tabbar" aria-label="Main">
+      <button class="tab active" data-tab="discover" id="tab-btn-discover">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2.6c.3 2.6-.7 4.3-2 5.9-1.2 1.5-2.6 3-2.6 5.3A5.1 5.1 0 0 0 14 18.9c3.4 0 6-2.7 6-6.4 0-4.4-3.2-8.4-6.5-9.9zM8.5 4.5C5.6 6.7 4 10 4 12.9 4 17.4 7.4 21 12 21c-2.9-1.4-4.6-3.9-4.6-7.1 0-2.9 1.5-4.8 2.7-6.3.9-1.1 1.7-2 1.9-3.4-1.2-.1-2.4.1-3.5.3z"/></svg>
+        Discover
+        <span class="dot" id="dot-discover"></span>
+      </button>
+      <button class="tab" data-tab="matches" id="tab-btn-matches">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 11.5a8.4 8.4 0 0 1-8.9 8.4c-1.3-.06-2.5-.4-3.6-1L4 20l1.2-4.3A8.4 8.4 0 1 1 21 11.5z"/></svg>
+        Matches
+        <span class="dot" id="dot-matches"></span>
+      </button>
+      <button class="tab" data-tab="profile" id="tab-btn-profile">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4.5 4.5 0 1 0-4.5-4.5A4.5 4.5 0 0 0 12 12zm0 2c-4 0-8 2-8 5v2h16v-2c0-3-4-5-8-5z"/></svg>
+        Profile
+        <span class="dot" id="dot-profile"></span>
+      </button>
+    </nav>
+  </section>
+
+  <!-- ============ CHAT ============ -->
+  <section class="screen" id="screen-chat" aria-label="Conversation">
+    <header class="chat-head">
+      <button class="back-btn" data-back="screen-app" style="padding-right:2px">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="avatar" id="chat-avatar"></div>
+      <div class="col">
+        <p class="name" id="chat-name"></p>
+        <p class="sub" id="chat-sub"></p>
+      </div>
+    </header>
+    <div class="chat-log" id="chat-log"></div>
+    <form class="composer" id="form-chat">
+      <input id="chat-input" type="text" placeholder="Say something kind…" autocomplete="off">
+      <button class="send" type="submit" id="chat-send" aria-label="Send" disabled>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 11.5 21 3l-8.5 18-2.3-7.2L3 11.5z"/></svg>
+      </button>
+    </form>
+  </section>
+
+  <!-- ============ FILTER SHEET ============ -->
+  <div class="sheet-backdrop" id="filter-backdrop">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="filter-title">
+      <div class="sheet-grab" aria-hidden="true"></div>
+      <h3 id="filter-title">Discovery filters</h3>
+      <div class="range-field">
+        <div class="row"><label for="f-age-min">Minimum age</label><output id="out-age-min">21</output></div>
+        <input type="range" id="f-age-min" min="18" max="60" value="21">
+      </div>
+      <div class="range-field">
+        <div class="row"><label for="f-age-max">Maximum age</label><output id="out-age-max">40</output></div>
+        <input type="range" id="f-age-max" min="18" max="60" value="40">
+      </div>
+      <div class="range-field">
+        <div class="row"><label for="f-dist">Distance</label><output id="out-dist">25 km</output></div>
+        <input type="range" id="f-dist" min="1" max="50" value="25">
+      </div>
+      <div class="field">
+        <label id="label-f-interests">Shared interests (optional)</label>
+        <div class="chips" id="f-interests" role="group" aria-labelledby="label-f-interests"></div>
+      </div>
+      <button class="btn" id="btn-apply-filters">Apply filters</button>
+      <button class="btn ghost" id="btn-reset-filters">Reset</button>
+    </div>
+  </div>
+
+  <!-- ============ MATCH OVERLAY ============ -->
+  <div class="match-overlay" id="match-overlay">
+    <div class="match-faces">
+      <div class="avatar" id="mo-me"></div>
+      <div class="avatar" id="mo-them"></div>
+    </div>
+    <h2>It's a match!</h2>
+    <p id="mo-text"></p>
+    <button class="btn" id="btn-say-hi" style="background:#fff;color:#b32047">Say hello</button>
+    <button class="btn ghost" id="btn-keep-swiping">Keep swiping</button>
+  </div>
+
+  <div id="toast" role="status"></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- data ---------------- */
+
+  var INTERESTS = ["Hiking", "Coffee", "Film", "Live music", "Cooking", "Climbing",
+    "Books", "Travel", "Yoga", "Photography", "Running", "Board games",
+    "Art", "Dogs", "Wine", "Surfing"];
+
+  var HUES = [[338, 24], [262, 200], [16, 340], [152, 190], [206, 258], [42, 8]];
+
+  // people you can match with. hues -> avatar/card gradient, likesYou -> mutual like on swipe,
+  // seeded -> already matched at first launch, with conversation history.
+  var POOL = [
+    { id: "maya", name: "Maya", age: 28, dist: 4, job: "Photographer",
+      bio: "Chasing golden hour and the city's best bánh mì.",
+      interests: ["Photography", "Travel", "Coffee"], hues: [206, 258], likesYou: true, seeded: true,
+      replies: ["Okay that's a strong opinion and I respect it.",
+        "Ha! I was literally about to say the same thing.",
+        "You free this weekend? There's a print fair on Saturday."] },
+    { id: "jonah", name: "Jonah", age: 29, dist: 6, job: "Barista & writer",
+      bio: "Short stories, long pours.",
+      interests: ["Coffee", "Books", "Film"], hues: [42, 8], likesYou: true, seeded: true,
+      replies: ["That's going straight into a story, fair warning.",
+        "Strong agree. Also: have you read anything good lately?",
+        "I make a mean cortado if you ever want a taste test."] },
+    { id: "priya", name: "Priya", age: 27, dist: 3, job: "Ceramicist",
+      bio: "I make bowls on purpose and friends by accident.",
+      interests: ["Art", "Coffee", "Yoga"], hues: [338, 24], likesYou: true,
+      replies: ["Careful, I already like you.", "Okay, tell me more.",
+        "You can come throw a pot sometime. It's messier than it looks."] },
+    { id: "theo", name: "Theo", age: 29, dist: 5, job: "Chef",
+      bio: "I'll cook, you pick the record.",
+      interests: ["Cooking", "Wine", "Live music"], hues: [16, 340], likesYou: false,
+      replies: ["Ha, deal.", "What's the last great thing you ate?"] },
+    { id: "amara", name: "Amara", age: 25, dist: 8, job: "Med resident",
+      bio: "Runs on 6am jogs and library naps.",
+      interests: ["Running", "Books", "Dogs"], hues: [152, 190], likesYou: true,
+      replies: ["Ha! My schedule is chaos but I like your energy.",
+        "A dog park date is objectively the best first date. Discuss.",
+        "Okay you're funny. Keep going."] },
+    { id: "luca", name: "Luca", age: 31, dist: 2, job: "Architect",
+      bio: "I point at buildings a lot. Warning you now.",
+      interests: ["Photography", "Film", "Travel"], hues: [206, 258], likesYou: false,
+      replies: ["Fair point, well made.", "Which building though?"] },
+    { id: "noor", name: "Noor", age: 26, dist: 12, job: "Climate researcher",
+      bio: "Half in the mountains, half in spreadsheets.",
+      interests: ["Hiking", "Climbing", "Board games"], hues: [152, 190], likesYou: true,
+      replies: ["Counterpoint: sunrise hikes are worth it exactly once a month.",
+        "I have a 7-game backlog of Cascadia. Consider this a warning.",
+        "You'd survive a long hike with me. I can tell."] },
+    { id: "felix", name: "Felix", age: 28, dist: 6, job: "Bassist",
+      bio: "In a band you've almost heard of.",
+      interests: ["Live music", "Film", "Coffee"], hues: [262, 200], likesYou: false,
+      replies: ["Ha! Almost is the operative word.", "Come to a show sometime."] },
+    { id: "ivy", name: "Ivy", age: 24, dist: 9, job: "Illustrator",
+      bio: "Draws strangers on the train (flatteringly).",
+      interests: ["Art", "Books", "Dogs"], hues: [338, 24], likesYou: false,
+      replies: ["You'd make a good sketch, for the record.", "Ha, noted!"] },
+    { id: "mateo", name: "Mateo", age: 30, dist: 4, job: "Teacher",
+      bio: "Grade-A pun dispenser. Detention for ghosting.",
+      interests: ["Board games", "Cooking", "Running"], hues: [42, 8], likesYou: true,
+      replies: ["Solid answer. Gold star.", "Okay but real question: pineapple on pizza?",
+        "You'd like my trivia team. We lose with dignity."] },
+    { id: "sasha", name: "Sasha", age: 27, dist: 15, job: "Pilot",
+      bio: "Layovers are just speed-run city tours.",
+      interests: ["Travel", "Surfing", "Wine"], hues: [206, 258], likesYou: false,
+      replies: ["Window seat or aisle? This matters.", "Ha! Safe answer."] },
+    { id: "wren", name: "Wren", age: 26, dist: 7, job: "Florist",
+      bio: "Knows the meaning of every flower. Uses it for gossip.",
+      interests: ["Art", "Hiking", "Coffee"], hues: [152, 190], likesYou: true,
+      replies: ["You get yellow acacia. Look it up.",
+        "Okay that made me actually laugh.",
+        "Bring me a weird flower fact and I'm yours."] },
+    { id: "daniel", name: "Daniel", age: 33, dist: 10, job: "Carpenter",
+      bio: "I make sturdy things. Emotionally, also sturdy.",
+      interests: ["Climbing", "Dogs", "Photography"], hues: [16, 340], likesYou: false,
+      replies: ["Measured twice before sending this.", "Ha. Good one."] },
+    { id: "zoe", name: "Zoe", age: 25, dist: 5, job: "Grad student",
+      bio: "Thesis: vibes. Methodology: playlists.",
+      interests: ["Yoga", "Books", "Live music"], hues: [262, 200], likesYou: true,
+      replies: ["Peer review says: you're interesting.",
+        "Adding that take to my lit review.",
+        "Send me one song that never fails. Choose wisely."] }
+  ];
+
+  function personById(id) {
+    for (var i = 0; i < POOL.length; i++) if (POOL[i].id === id) return POOL[i];
+    return null;
+  }
+
+  /* ---------------- state ---------------- */
+
+  var STORE_KEY = "kindred-proto-v1";
+
+  var state = {
+    user: null,               // {name, age, email, gender, pref, bio, interests[], hues}
+    seen: {},                 // id -> "like" | "pass"
+    matches: [],              // [{id, at, unread, lastAt}]
+    convos: {},               // id -> [{from:"me"|"them", text, at}]
+    filters: { ageMin: 21, ageMax: 40, dist: 25, interests: [] },
+    pendingSignup: null,
+    activeChat: null,
+    deck: []                  // ids, top of deck = last element
+  };
+
+  function save() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        user: state.user, seen: state.seen, matches: state.matches,
+        convos: state.convos, filters: state.filters
+      }));
+    } catch (e) { /* private mode etc. — prototype runs fine without persistence */ }
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return false;
+      var d = JSON.parse(raw);
+      if (!d || !d.user) return false;
+      state.user = d.user;
+      state.seen = d.seen || {};
+      state.matches = d.matches || [];
+      state.convos = d.convos || {};
+      state.filters = d.filters || state.filters;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function seedMatches() {
+    var now = Date.now();
+    POOL.forEach(function (p) {
+      if (!p.seeded) return;
+      state.seen[p.id] = "like";
+      state.matches.push({ id: p.id, at: now - 86400000, unread: p.id === "jonah", lastAt: 0 });
+    });
+    state.convos.maya = [
+      { from: "them", text: "Okay, your bio made me laugh. Hi!", at: now - 86000000 },
+      { from: "me", text: "Ha, mission accomplished. Hi Maya!", at: now - 85000000 },
+      { from: "them", text: "So — film or digital? Answer carefully.", at: now - 84000000 }
+    ];
+    state.convos.jonah = [
+      { from: "them", text: "I've decided your coffee order says everything about you. What is it?", at: now - 7200000 }
+    ];
+    state.matches.forEach(function (m) {
+      var c = state.convos[m.id];
+      if (c && c.length) m.lastAt = c[c.length - 1].at;
+    });
+  }
+
+  /* ---------------- tiny dom helpers ---------------- */
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function grad(hues, deg) {
+    return "linear-gradient(" + (deg || 135) + "deg, hsl(" + hues[0] + " 62% 52%), hsl(" + hues[1] + " 70% 60%))";
+  }
+  function initials(name) { return name.trim().charAt(0).toUpperCase(); }
+  function setAvatar(node, name, hues, size) {
+    node.textContent = initials(name);
+    node.style.background = grad(hues);
+    if (size) { node.style.width = size + "px"; node.style.height = size + "px"; }
+  }
+  function timeLabel(at) {
+    if (!at) return "";
+    var diff = Date.now() - at;
+    if (diff < 60000) return "Just now";
+    if (diff < 3600000) return Math.round(diff / 60000) + "m";
+    if (diff < 86400000) return Math.round(diff / 3600000) + "h";
+    return Math.round(diff / 86400000) + "d";
+  }
+  function clock(at) {
+    var d = new Date(at);
+    var h = d.getHours(), m = d.getMinutes();
+    return (h % 12 || 12) + ":" + (m < 10 ? "0" : "") + m + (h < 12 ? " am" : " pm");
+  }
+  var toastTimer = null;
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2200);
+  }
+
+  /* ---------------- navigation ---------------- */
+
+  function showScreen(id) {
+    var screens = document.querySelectorAll(".screen");
+    for (var i = 0; i < screens.length; i++) screens[i].classList.remove("active");
+    $(id).classList.add("active");
+  }
+  function showTab(name) {
+    ["discover", "matches", "profile"].forEach(function (t) {
+      $("view-" + t).classList.toggle("active", t === name);
+      $("tab-btn-" + t).classList.toggle("active", t === name);
+    });
+    if (name === "matches") renderMatches();
+    if (name === "profile") renderProfile();
+    if (name === "discover") renderDeck();
+  }
+  document.querySelectorAll("[data-back]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var target = b.getAttribute("data-back");
+      if (target === "screen-app") { showScreen("screen-app"); showTab("matches"); }
+      else showScreen(target);
+    });
+  });
+  document.querySelectorAll(".tab").forEach(function (b) {
+    b.addEventListener("click", function () { showTab(b.getAttribute("data-tab")); });
+  });
+
+  /* ---------------- interest chip groups ---------------- */
+
+  function buildChips(containerId, selected, max) {
+    var box = $(containerId);
+    box.textContent = "";
+    INTERESTS.forEach(function (name) {
+      var c = el("button", "chip", name);
+      c.type = "button";
+      c.setAttribute("aria-pressed", selected.indexOf(name) >= 0 ? "true" : "false");
+      c.addEventListener("click", function () {
+        var on = c.getAttribute("aria-pressed") === "true";
+        if (!on && max && box.querySelectorAll('[aria-pressed="true"]').length >= max) {
+          toast("Pick up to " + max);
+          return;
+        }
+        c.setAttribute("aria-pressed", on ? "false" : "true");
+      });
+      box.appendChild(c);
+    });
+  }
+  function chipValues(containerId) {
+    var out = [];
+    $(containerId).querySelectorAll('[aria-pressed="true"]').forEach(function (c) { out.push(c.textContent); });
+    return out;
+  }
+  function buildSwatches(containerId, selectedIdx) {
+    var box = $(containerId);
+    box.textContent = "";
+    HUES.forEach(function (h, i) {
+      var s = el("button", "swatch");
+      s.type = "button";
+      s.style.background = grad(h);
+      s.setAttribute("aria-label", "Color option " + (i + 1));
+      s.setAttribute("aria-pressed", i === selectedIdx ? "true" : "false");
+      s.addEventListener("click", function () {
+        box.querySelectorAll(".swatch").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+        s.setAttribute("aria-pressed", "true");
+      });
+      box.appendChild(s);
+    });
+  }
+  function swatchValue(containerId) {
+    var kids = $(containerId).querySelectorAll(".swatch");
+    for (var i = 0; i < kids.length; i++) if (kids[i].getAttribute("aria-pressed") === "true") return HUES[i];
+    return HUES[0];
+  }
+
+  /* ---------------- auth ---------------- */
+
+  $("btn-goto-signup").addEventListener("click", function () {
+    buildChips("setup-interests", [], 6);
+    buildSwatches("setup-swatches", 0);
+    showScreen("screen-signup");
+  });
+  $("btn-goto-login").addEventListener("click", function () { showScreen("screen-login"); });
+
+  $("form-signup").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var name = $("su-name").value.trim();
+    var age = parseInt($("su-age").value, 10);
+    var email = $("su-email").value.trim();
+    var pass = $("su-password").value;
+    var err = "";
+    if (!name) err = "Tell us your first name.";
+    else if (!age || age < 18) err = "You need to be 18 or older.";
+    else if (age > 99) err = "That age seems… ambitious.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err = "That email doesn't look right.";
+    else if (pass.length < 6) err = "Password needs at least 6 characters.";
+    $("su-error").textContent = err;
+    if (err) return;
+    state.pendingSignup = {
+      name: name, age: age, email: email,
+      gender: $("su-gender").value, pref: $("su-pref").value
+    };
+    showScreen("screen-setup");
+  });
+
+  $("form-setup").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var picked = chipValues("setup-interests");
+    if (picked.length < 3) { $("set-error").textContent = "Pick at least 3 interests."; return; }
+    $("set-error").textContent = "";
+    var u = state.pendingSignup || { name: "You", age: 27, email: "", gender: "", pref: "Everyone" };
+    u.bio = $("set-bio").value.trim() || "Just here to see how this prototype feels.";
+    u.interests = picked;
+    u.hues = swatchValue("setup-swatches");
+    enter(u, true);
+  });
+
+  $("form-login").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var email = $("li-email").value.trim();
+    var pass = $("li-password").value;
+    var err = "";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err = "That email doesn't look right.";
+    else if (!pass) err = "Enter any password — we're not picky here.";
+    $("li-error").textContent = err;
+    if (err) return;
+    if (state.user) { enter(state.user, false); return; }
+    enter({
+      name: "Alex", age: 27, email: email, gender: "Non-binary", pref: "Everyone",
+      bio: "Returning explorer of this fine prototype.",
+      interests: ["Coffee", "Film", "Hiking"], hues: HUES[1]
+    }, true);
+  });
+
+  function enter(user, fresh) {
+    state.user = user;
+    if (fresh) {
+      state.seen = {}; state.matches = []; state.convos = {};
+      state.filters = { ageMin: 21, ageMax: 40, dist: 25, interests: [] };
+      seedMatches();
+    }
+    save();
+    rebuildDeck();
+    showScreen("screen-app");
+    showTab("discover");
+    updateBadges();
+    if (fresh) toast("Welcome, " + user.name + "!");
+  }
+
+  $("btn-logout").addEventListener("click", function () {
+    state.user = null; state.pendingSignup = null; state.activeChat = null;
+    state.seen = {}; state.matches = []; state.convos = {}; state.deck = [];
+    try { localStorage.removeItem(STORE_KEY); } catch (e) { /* fine */ }
+    showScreen("screen-welcome");
+    toast("Logged out");
+  });
+
+  /* ---------------- deck ---------------- */
+
+  function passesFilters(p) {
+    var f = state.filters;
+    if (p.age < f.ageMin || p.age > f.ageMax) return false;
+    if (p.dist > f.dist) return false;
+    if (f.interests.length) {
+      var shared = p.interests.some(function (i) { return f.interests.indexOf(i) >= 0; });
+      if (!shared) return false;
+    }
+    return true;
+  }
+  function rebuildDeck() {
+    state.deck = POOL
+      .filter(function (p) { return !(p.id in state.seen) && passesFilters(p); })
+      .map(function (p) { return p.id; })
+      .reverse(); // top card = last element
+  }
+
+  function makeCard(p) {
+    var card = el("div", "deck-card");
+    card.dataset.id = p.id;
+    var art = el("div", "art");
+    art.style.background = grad(p.hues, 160);
+    art.appendChild(el("span", "initials", initials(p.name)));
+    card.appendChild(art);
+    card.appendChild(el("div", "scrim"));
+
+    var like = el("span", "stamp like", "LIKE");
+    var nope = el("span", "stamp nope", "NOPE");
+    card.appendChild(like); card.appendChild(nope);
+
+    var info = el("div", "card-info");
+    var name = el("h3", "card-name", p.name + " ");
+    name.appendChild(el("span", "age", String(p.age)));
+    info.appendChild(name);
+
+    var meta = el("p", "card-meta");
+    meta.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 21s-7-5.1-7-11a7 7 0 0 1 14 0c0 5.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>';
+    meta.appendChild(document.createTextNode(p.dist + " km away · " + p.job));
+    info.appendChild(meta);
+    info.appendChild(el("p", "card-bio", p.bio));
+    var tags = el("div", "card-tags");
+    p.interests.forEach(function (t) { tags.appendChild(el("span", "tag", t)); });
+    info.appendChild(tags);
+    card.appendChild(info);
+    return card;
+  }
+
+  function renderDeck() {
+    var deck = $("deck");
+    deck.textContent = "";
+    if (!state.deck.length) {
+      var empty = el("div", "deck-empty");
+      empty.innerHTML = '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 21s-7.5-4.7-10-9.3C.4 8.7 2 5 5.5 5c2 0 3.4 1.1 4.2 2.4C10 8.7 10.7 10 12 10s2-1.3 2.3-2.6C15.1 6.1 16.5 5 18.5 5 22 5 23.6 8.7 22 11.7 19.5 16.3 12 21 12 21z"/></svg>';
+      empty.appendChild(el("h3", null, "You're all caught up"));
+      empty.appendChild(el("p", null, "No more people match your filters right now. Try widening them."));
+      var widen = el("button", "btn quiet", "Adjust filters");
+      widen.style.width = "auto";
+      widen.addEventListener("click", openFilters);
+      empty.appendChild(widen);
+      deck.appendChild(empty);
+      return;
+    }
+    // render at most the top two cards
+    var ids = state.deck.slice(-2);
+    ids.forEach(function (id, idx) {
+      var card = makeCard(personById(id));
+      var isTop = idx === ids.length - 1;
+      if (!isTop) card.classList.add("under");
+      deck.appendChild(card);
+      if (isTop) attachSwipe(card);
+    });
+  }
+
+  function topCardEl() {
+    var cards = $("deck").querySelectorAll(".deck-card");
+    return cards.length ? cards[cards.length - 1] : null;
+  }
+
+  function attachSwipe(card) {
+    var startX = 0, startY = 0, dx = 0, dy = 0, active = false;
+    card.addEventListener("pointerdown", function (ev) {
+      active = true; dx = 0; dy = 0;
+      startX = ev.clientX; startY = ev.clientY;
+      card.classList.add("dragging");
+      card.setPointerCapture(ev.pointerId);
+    });
+    card.addEventListener("pointermove", function (ev) {
+      if (!active) return;
+      dx = ev.clientX - startX; dy = ev.clientY - startY;
+      card.style.transform = "translate(" + dx + "px," + (dy * 0.35) + "px) rotate(" + (dx * 0.055) + "deg)";
+      var likeStamp = card.querySelector(".stamp.like");
+      var nopeStamp = card.querySelector(".stamp.nope");
+      likeStamp.style.opacity = Math.min(1, Math.max(0, dx / 80));
+      nopeStamp.style.opacity = Math.min(1, Math.max(0, -dx / 80));
+    });
+    function release() {
+      if (!active) return;
+      active = false;
+      card.classList.remove("dragging");
+      if (dx > 90) { commitSwipe("like"); }
+      else if (dx < -90) { commitSwipe("pass"); }
+      else {
+        card.style.transform = "";
+        card.querySelector(".stamp.like").style.opacity = 0;
+        card.querySelector(".stamp.nope").style.opacity = 0;
+      }
+    }
+    card.addEventListener("pointerup", release);
+    card.addEventListener("pointercancel", release);
+  }
+
+  function commitSwipe(verdict) {
+    if (!state.deck.length) return;
+    var id = state.deck.pop();
+    var p = personById(id);
+    state.seen[id] = verdict;
+    var card = topCardEl();
+    if (card) {
+      var fly = verdict === "like" ? 1 : -1;
+      card.querySelector(".stamp." + (verdict === "like" ? "like" : "nope")).style.opacity = 1;
+      card.style.transform = "translate(" + (fly * 480) + "px,-40px) rotate(" + (fly * 24) + "deg)";
+      card.style.opacity = "0";
+    }
+    save();
+    setTimeout(function () {
+      if (verdict === "like" && p.likesYou) openMatchOverlay(p);
+      renderDeck();
+      updateBadges();
+    }, 220);
+  }
+
+  $("btn-like").addEventListener("click", function () { commitSwipe("like"); });
+  $("btn-pass").addEventListener("click", function () { commitSwipe("pass"); });
+
+  /* ---------------- matching ---------------- */
+
+  function openMatchOverlay(p) {
+    state.matches.push({ id: p.id, at: Date.now(), unread: false, lastAt: 0 });
+    save();
+    setAvatar($("mo-me"), state.user.name, state.user.hues);
+    setAvatar($("mo-them"), p.name, p.hues);
+    $("mo-text").textContent = "You and " + p.name + " liked each other. Someone has to go first…";
+    $("match-overlay").classList.add("open");
+    $("match-overlay").dataset.id = p.id;
+    updateBadges();
+  }
+  $("btn-keep-swiping").addEventListener("click", function () {
+    $("match-overlay").classList.remove("open");
+  });
+  $("btn-say-hi").addEventListener("click", function () {
+    var id = $("match-overlay").dataset.id;
+    $("match-overlay").classList.remove("open");
+    openChat(id);
+  });
+
+  function updateBadges() {
+    var unread = state.matches.some(function (m) { return m.unread; });
+    $("dot-matches").classList.toggle("show", unread);
+  }
+
+  /* ---------------- matches list ---------------- */
+
+  function renderMatches() {
+    var listBox = $("match-list");
+    var strip = $("new-strip");
+    listBox.textContent = "";
+    strip.textContent = "";
+
+    var fresh = state.matches.filter(function (m) { return !(state.convos[m.id] || []).length; });
+    var talked = state.matches.filter(function (m) { return (state.convos[m.id] || []).length; });
+    $("label-new-matches").hidden = !fresh.length;
+
+    fresh.forEach(function (m) {
+      var p = personById(m.id);
+      var b = el("button", "new-face");
+      var av = el("div", "avatar");
+      setAvatar(av, p.name, p.hues);
+      b.appendChild(av);
+      b.appendChild(el("span", null, p.name));
+      b.addEventListener("click", function () { openChat(m.id); });
+      strip.appendChild(b);
+    });
+
+    if (!state.matches.length) {
+      var note = el("div", "empty-note");
+      note.appendChild(el("h3", null, "No matches yet"));
+      note.appendChild(el("p", null, "Head to Discover and start swiping — someone out there already likes you."));
+      listBox.appendChild(note);
+      return;
+    }
+    if (!talked.length) {
+      var note2 = el("div", "empty-note");
+      note2.appendChild(el("h3", null, "Say the first word"));
+      note2.appendChild(el("p", null, "Tap a new match above to start the conversation."));
+      listBox.appendChild(note2);
+      return;
+    }
+
+    talked.sort(function (a, b) { return b.lastAt - a.lastAt; });
+    talked.forEach(function (m) {
+      var p = personById(m.id);
+      var convo = state.convos[m.id];
+      var last = convo[convo.length - 1];
+      var row = el("button", "match-row");
+      var av = el("div", "avatar");
+      setAvatar(av, p.name, p.hues);
+      row.appendChild(av);
+      var col = el("div", "col");
+      col.appendChild(el("p", "name", p.name));
+      col.appendChild(el("p", "preview", (last.from === "me" ? "You: " : "") + last.text));
+      row.appendChild(col);
+      row.appendChild(el("span", "when", timeLabel(last.at)));
+      var dot = el("span", "unread" + (m.unread ? " show" : ""));
+      dot.classList.add("unread");
+      if (m.unread) dot.classList.add("show");
+      row.appendChild(dot);
+      row.addEventListener("click", function () { openChat(m.id); });
+      listBox.appendChild(row);
+    });
+  }
+
+  /* ---------------- chat ---------------- */
+
+  var replyTimer = null;
+
+  function matchFor(id) {
+    for (var i = 0; i < state.matches.length; i++) if (state.matches[i].id === id) return state.matches[i];
+    return null;
+  }
+
+  function openChat(id) {
+    var p = personById(id);
+    state.activeChat = id;
+    var m = matchFor(id);
+    if (m) { m.unread = false; }
+    save();
+    updateBadges();
+    setAvatar($("chat-avatar"), p.name, p.hues);
+    $("chat-name").textContent = p.name + ", " + p.age;
+    $("chat-sub").textContent = p.job + " · " + p.dist + " km away";
+    $("chat-input").value = "";
+    $("chat-send").disabled = true;
+    renderChat();
+    showScreen("screen-chat");
+  }
+
+  function renderChat() {
+    var log = $("chat-log");
+    log.textContent = "";
+    var p = personById(state.activeChat);
+    var convo = state.convos[state.activeChat] || [];
+    if (!convo.length) {
+      log.appendChild(el("div", "chat-day", "You matched with " + p.name + " — say hello!"));
+    } else {
+      log.appendChild(el("div", "chat-day", "Matched with " + p.name));
+    }
+    convo.forEach(function (msg) {
+      var b = el("div", "bubble " + (msg.from === "me" ? "me" : "them"), msg.text);
+      b.appendChild(el("span", "t", clock(msg.at)));
+      log.appendChild(b);
+    });
+    log.scrollTop = log.scrollHeight;
+  }
+
+  $("chat-input").addEventListener("input", function () {
+    $("chat-send").disabled = !$("chat-input").value.trim();
+  });
+
+  $("form-chat").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var text = $("chat-input").value.trim();
+    if (!text || !state.activeChat) return;
+    var id = state.activeChat;
+    var p = personById(id);
+    if (!state.convos[id]) state.convos[id] = [];
+    state.convos[id].push({ from: "me", text: text, at: Date.now() });
+    var m = matchFor(id);
+    if (m) m.lastAt = Date.now();
+    $("chat-input").value = "";
+    $("chat-send").disabled = true;
+    save();
+    renderChat();
+
+    // canned auto-reply so the prototype feels alive
+    clearTimeout(replyTimer);
+    var typing = el("div", "bubble them typing", p.name + " is typing…");
+    $("chat-log").appendChild(typing);
+    $("chat-log").scrollTop = $("chat-log").scrollHeight;
+    var used = state.convos[id].filter(function (x) { return x.from === "them"; }).length;
+    var line = p.replies[used % p.replies.length];
+    replyTimer = setTimeout(function () {
+      state.convos[id].push({ from: "them", text: line, at: Date.now() });
+      var mm = matchFor(id);
+      if (mm) {
+        mm.lastAt = Date.now();
+        if (state.activeChat !== id) mm.unread = true;
+      }
+      save();
+      if (state.activeChat === id && $("screen-chat").classList.contains("active")) renderChat();
+      updateBadges();
+    }, 1400 + Math.random() * 900);
+  });
+
+  /* ---------------- filters ---------------- */
+
+  function openFilters() {
+    var f = state.filters;
+    $("f-age-min").value = f.ageMin; $("out-age-min").textContent = f.ageMin;
+    $("f-age-max").value = f.ageMax; $("out-age-max").textContent = f.ageMax;
+    $("f-dist").value = f.dist; $("out-dist").textContent = f.dist + " km";
+    buildChips("f-interests", f.interests, 0);
+    $("filter-backdrop").classList.add("open");
+  }
+  $("btn-filters").addEventListener("click", openFilters);
+  $("filter-backdrop").addEventListener("click", function (ev) {
+    if (ev.target === $("filter-backdrop")) $("filter-backdrop").classList.remove("open");
+  });
+  $("f-age-min").addEventListener("input", function () {
+    var min = parseInt($("f-age-min").value, 10);
+    if (min > parseInt($("f-age-max").value, 10)) { $("f-age-max").value = min; $("out-age-max").textContent = min; }
+    $("out-age-min").textContent = min;
+  });
+  $("f-age-max").addEventListener("input", function () {
+    var max = parseInt($("f-age-max").value, 10);
+    if (max < parseInt($("f-age-min").value, 10)) { $("f-age-min").value = max; $("out-age-min").textContent = max; }
+    $("out-age-max").textContent = max;
+  });
+  $("f-dist").addEventListener("input", function () {
+    $("out-dist").textContent = $("f-dist").value + " km";
+  });
+  $("btn-apply-filters").addEventListener("click", function () {
+    state.filters = {
+      ageMin: parseInt($("f-age-min").value, 10),
+      ageMax: parseInt($("f-age-max").value, 10),
+      dist: parseInt($("f-dist").value, 10),
+      interests: chipValues("f-interests")
+    };
+    save();
+    rebuildDeck();
+    $("filter-backdrop").classList.remove("open");
+    renderDeck();
+    toast(state.deck.length ? state.deck.length + " people match your filters" : "No one matches — try widening");
+  });
+  $("btn-reset-filters").addEventListener("click", function () {
+    state.filters = { ageMin: 21, ageMax: 40, dist: 25, interests: [] };
+    save();
+    openFilters();
+  });
+
+  /* ---------------- profile ---------------- */
+
+  function renderProfile() {
+    var u = state.user;
+    setAvatar($("me-avatar"), u.name, u.hues);
+    $("me-name").textContent = u.name + ", " + u.age;
+    $("me-sub").textContent = u.email || "Prototype account";
+    $("pf-bio").value = u.bio || "";
+    buildChips("pf-interests", u.interests || [], 6);
+    var idx = 0;
+    HUES.forEach(function (h, i) { if (u.hues && h[0] === u.hues[0] && h[1] === u.hues[1]) idx = i; });
+    buildSwatches("pf-swatches", idx);
+  }
+  $("form-profile").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var picked = chipValues("pf-interests");
+    if (picked.length < 3) { toast("Keep at least 3 interests"); return; }
+    state.user.bio = $("pf-bio").value.trim();
+    state.user.interests = picked;
+    state.user.hues = swatchValue("pf-swatches");
+    save();
+    renderProfile();
+    toast("Profile saved");
+  });
+
+  /* ---------------- boot ---------------- */
+
+  if (load()) {
+    rebuildDeck();
+    showScreen("screen-app");
+    showTab("discover");
+    updateBadges();
+  }
+})();
+</script>
+<!-- ARTIFACT-BODY-END -->
+</body>
+</html>
