@@ -2,9 +2,10 @@
 
 ## Context
 
-`docs/spec/` holds the product spec pack (currently `README.md` + `01-product-overview.md`;
-the pack's index references `02`–`09` — **those files are not in the repo yet**; add them to
-`docs/spec/` as they become available and update the milestones below with their detail).
+`docs/spec/` holds the product spec pack (currently `README.md`, `01-product-overview.md`,
+and `02-api-contract.md`; the pack's index references `03`–`09` — **those files are not in
+the repo yet**; add them to `docs/spec/` as they become available and update the milestones
+below with their detail).
 
 The spec targets a SwiftUI iOS client against a real backend (auth, profiles, discovery,
 matching, chat; REST + WebSocket). What exists today is the **HTML prototype**
@@ -14,6 +15,12 @@ discover → swipe → match → chat. Strategy:
 1. The prototype is the living, testable reference for product behavior. Every feature it
    implements is locked by a regression suite in `tests/` so new features can't silently
    break old ones.
+1. The API contract (`02`) is implemented as an **in-page mock backend** inside
+   `index.html` — every route, the error envelope, rotating tokens, idempotent swipes,
+   cursor pagination, and the WS frame set — because the published artifact sandbox blocks
+   real network calls. The UI talks to it only through `apiCall()` and the socket frames,
+   so swapping in the real backend is a transport change, and `tests/test-api.js` checks
+   the contract directly.
 2. Spec-driven features land in the prototype first (cheap to validate), each with its own
    test script added to `tests/run-all.js`.
 3. When the real client/backend gets built, the specs in `docs/spec/` are the source of
@@ -27,7 +34,7 @@ dating-app/
 ├── README.md           # how to run the app and the tests
 ├── docs/
 │   ├── PLAN.md         # this file — feature plan and status
-│   └── spec/           # product spec pack (01 present; 02–09 pending)
+│   └── spec/           # product spec pack (01–02 present; 03–09 pending)
 └── tests/              # per-feature regression suites (Playwright + Chromium)
     ├── package.json    # npm install && npm test
     ├── harness.js      # shared launch/signup/swipe helpers + suite runner
@@ -42,20 +49,21 @@ Rules that keep it usable:
   fully green.
 - The app stays dependency-free and single-file until the spec's client build starts;
   tests are the only place with npm dependencies (`tests/node_modules/` is gitignored).
-- Prototype-only divergences from the spec (mock email auth instead of OTP, gradient
-  avatars instead of photos) are listed per feature below, so nobody mistakes them for
-  product decisions.
+- Prototype-only divergences from the spec (on-screen OTP codes instead of SMS, a sample
+  photo library instead of camera-roll uploads) are listed per feature below, so nobody
+  mistakes them for product decisions.
 
 ## Features → tests → status
 
 | # | Feature (spec 01) | Prototype status | Test script | Prototype divergence from spec |
 |---|-------------------|------------------|-------------|-------------------------------|
-| 1 | Signup/login + session persistence | Done | `test-auth.js` | Mock email+password instead of phone OTP; no token refresh |
+| 1 | Phone OTP signup/login, token refresh, session persistence | Done | `test-auth.js`, `test-api.js` | OTP code is shown on screen (no SMS); access-token TTL simulated with rotating refresh |
 | 2 | Profile (name, age, bio, interests, 1–6 photos with reorder + moderation) | Done | `test-profile.js`, `test-photos.js` | Photos come from a mock sample library (real uploads need a backend); moderation is simulated (~2.5s, "Low light" always rejected) |
-| 3 | Preferences (age range, distance, interests) | Done | `test-filters.js` | Interests filter is an extra; spec has genders-shown instead |
+| 3 | Preferences (age range, distance, genders shown) | Done | `test-filters.js` | Interests filter kept as a documented extension of `PUT /me/preferences` |
 | 4 | Discovery deck (gesture + button swipes, rounded km, empty state) | Done | `test-discovery.js` | Mock candidate pool, no geo backend |
 | 5 | Match on mutual like (modal → chat) | Done | `test-matching.js` | Mutual likes pre-flagged in mock data |
-| 6 | Matches list + 1:1 chat (previews, unread, receipts) | Done | `test-chat.js` | Canned auto-replies instead of WebSocket; no read receipts yet |
+| 6 | Matches list + 1:1 chat (previews, unread, read receipts, unmatch) | Done | `test-chat.js`, `test-matching.js` | WS is emulated in-page (frames per contract, always "connected"); bot partners auto-reply |
+| 6b | API contract (02) end to end | Done | `test-api.js` | In-page mock backend; `banned` and rate-limit interstitials not simulated |
 | 7 | Safety: report + block from every surface, moderation notice | Done | `test-safety.js` | Reports stored locally; no real moderation backend |
 | 8 | Settings: legal links, data export, account deletion, notification toggle | Done | `test-settings.js` | Placeholder legal copy; export shows JSON in-app (sandbox blocks downloads); notifications are a stored toggle only |
 | 9 | Push notifications (match, message) | Out of prototype scope | — | Browser prototype; revisit in client build |
@@ -82,10 +90,14 @@ undo/rewind, "who liked you", verification badges, ML feed controls, Android/iPa
   deterministically, so the state is demonstrable); a rejection dots the Profile tab until
   removed; pending review resumes across reloads. Candidate cards render only approved
   photos and fall back to initials otherwise. Shipped with `test-photos.js` (10 tests).
-- **M5 — Spec alignment pass.** When `02-api-contract.md` and `03-data-models.md` arrive:
-  rename prototype state/fields to the contract's names (`onboarding_state`,
-  `distance_km`, …) so the prototype and future client speak the same language. Full
-  suite must stay green — that's what it's for.
+- **M5 — API contract. ✅ Done.** `02-api-contract.md` implemented as the in-page mock
+  backend; the UI rebuilt onto it: phone OTP onboarding (E.164 validation, `otp_throttled`
+  resend cooldown, `invalid_otp` handling), birthdate with the server-enforced `underage`
+  hard stop, contract-named models (`onboarding_state`, `distance_km`, `moderation_status`),
+  gender preferences, presign→PUT→confirm photo flow, idempotent swipes, unmatch
+  (`DELETE /matches/{id}` + `match.closed`), read receipts (`message.read`), and
+  `POST /me/export` / `DELETE /me`. Conformance locked by `test-api.js` (13 tests).
+  Known gaps for later: `banned` wall, deck rate-limit interstitial, WS reconnect states.
 - **M6 — Real client.** Start the SwiftUI (or chosen stack) build per `09-ui-build-plan.md`,
   porting one prototype feature + its test intent per milestone.
 

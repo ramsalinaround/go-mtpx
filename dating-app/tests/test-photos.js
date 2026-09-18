@@ -12,7 +12,7 @@ async function addPhoto(page, label) {
   await page.click('.photo-add');
   await page.waitForSelector('#photo-backdrop.open');
   await page.click(`.photo-preset:has-text("${label}")`);
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(450);
 }
 
 function photoKinds(page) {
@@ -56,7 +56,7 @@ suite('Profile photos & moderation', async ({ page, test }) => {
 
   await test('removing the rejected photo clears the badge', async () => {
     await page.click('.photo-slot[data-status="rejected"] .ph-remove');
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(400);
     assert(await page.locator('#dot-profile.show').count() === 0, 'dot not cleared');
     assert((await storedState(page)).user.photos.length === 1, 'photo not removed');
   });
@@ -69,10 +69,10 @@ suite('Profile photos & moderation', async ({ page, test }) => {
     );
     assert((await photoKinds(page)).join() === 'sunset,forest', 'unexpected starting order');
     await page.click('.photo-slot >> nth=0 >> .ph-right');
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(400);
     assert((await photoKinds(page)).join() === 'forest,sunset', 'reorder failed');
     await page.click('.photo-slot >> nth=1 >> .ph-left');
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(400);
     assert((await photoKinds(page)).join() === 'sunset,forest', 'reorder back failed');
   });
 

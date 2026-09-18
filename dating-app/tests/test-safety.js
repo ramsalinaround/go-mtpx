@@ -1,14 +1,14 @@
 'use strict';
-// Feature: safety (spec 01 non-negotiables 2+3 — report and block reachable from
-// every surface showing another user's content: deck card, match row, chat; report
-// shows the reason picker and the 24-hour moderation commitment; block is
-// immediate, both directions, and persists).
+// Feature: safety (contract 02 — POST /reports with the ReportReason enum,
+// POST /blocks ending feed/matches/chat both directions; spec 01
+// non-negotiables 2+3). Guards: entry points on all three surfaces, the
+// 24-hour moderation notice, block effects and persistence.
 
 const { suite, assert, freshApp, signUp, topCardId, storedState } = require('./harness');
 
 suite('Safety: report & block', async ({ page, test }) => {
 
-  await test('deck card exposes a safety entry point', async () => {
+  await test('deck card exposes a safety entry point (no unmatch there)', async () => {
     await freshApp(page);
     await signUp(page);
     await page.waitForSelector('.deck-card');
@@ -16,6 +16,8 @@ suite('Safety: report & block', async ({ page, test }) => {
     await page.waitForSelector('#safety-backdrop.open');
     assert(/Report Priya/.test(await page.textContent('#safety-report-label')), 'report option not named');
     assert(/Block Priya/.test(await page.textContent('#safety-block-label')), 'block option not named');
+    assert(await page.locator('#safety-unmatch-wrap[hidden]').count() === 1,
+      'unmatch offered where no match exists');
   });
 
   await test('report shows a reason picker', async () => {
@@ -30,8 +32,8 @@ suite('Safety: report & block', async ({ page, test }) => {
     assert(/within 24 hours/.test(await page.textContent('#safety-report-done')),
       'moderation commitment missing');
     const reports = (await storedState(page)).reports;
-    assert(reports.length === 1 && reports[0].id === 'priya' && reports[0].reason === 'Fake profile or spam',
-      'report not recorded');
+    assert(reports.length === 1 && reports[0].id === 'priya' && reports[0].reason === 'spam_or_fake',
+      'report not recorded with the enum reason: ' + JSON.stringify(reports));
   });
 
   await test('report alone does not block — profile stays in the deck', async () => {
@@ -45,17 +47,20 @@ suite('Safety: report & block', async ({ page, test }) => {
     await page.click('#btn-block-open');
     assert(/can't be undone/.test(await page.textContent('#safety-block-note')), 'no consequence copy');
     await page.click('#btn-block-confirm');
-    await page.waitForTimeout(300);
-    assert((await topCardId(page)) !== 'priya', 'blocked profile still on top of deck');
+    await page.waitForFunction(() => {
+      const c = document.querySelector('.deck-card:last-child');
+      return c && c.dataset.id !== 'priya';
+    });
     assert((await storedState(page)).blocked.priya === true, 'block not recorded');
   });
 
-  await test('blocked users are excluded when filters rebuild the deck', async () => {
+  await test('blocked users are excluded when the feed rebuilds', async () => {
+    await page.evaluate(() => document.getElementById('toast').classList.remove('show'));
     await page.click('#btn-filters');
     await page.waitForSelector('#filter-backdrop.open');
     await page.click('#btn-apply-filters');
     const toast = await page.waitForSelector('#toast.show');
-    assert(/11 people/.test(await toast.textContent()), 'blocked user still counted in deck');
+    assert(/11 people/.test(await toast.textContent()), 'blocked user still counted in feed');
   });
 
   await test('block from a match row removes the conversation', async () => {
@@ -65,6 +70,7 @@ suite('Safety: report & block', async ({ page, test }) => {
     await page.waitForSelector('#safety-backdrop.open');
     await page.click('#btn-block-open');
     await page.click('#btn-block-confirm');
+    await page.locator('.match-row:has-text("Maya")').waitFor({ state: 'detached', timeout: 5000 });
     await page.waitForTimeout(300);
     assert(!(await page.locator('.match-row:has-text("Maya")').count()), 'Maya row still listed');
   });
@@ -77,6 +83,7 @@ suite('Safety: report & block', async ({ page, test }) => {
     await page.click('#btn-block-open');
     await page.click('#btn-block-confirm');
     await page.waitForSelector('#view-matches.active');
+    await page.waitForTimeout(300);
     assert(!(await page.locator('.match-row:has-text("Jonah")').count()), 'Jonah row still listed');
     assert(await page.locator('.empty-note').isVisible(), 'expected empty matches state');
   });
@@ -92,8 +99,9 @@ suite('Safety: report & block', async ({ page, test }) => {
     await page.click('.deck-card >> nth=-1 >> .card-safety');
     await page.click('#btn-report-open');
     await page.click('#reason-list .safety-opt:has-text("Made me feel unsafe")');
+    await page.waitForSelector('#safety-report-done:not([hidden])');
     await page.click('#btn-report-block');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(400);
     assert((await storedState(page)).blocked[target] === true, 'also-block did not block');
     assert((await topCardId(page)) !== target, 'card not removed after also-block');
   });
@@ -104,7 +112,7 @@ suite('Safety: report & block', async ({ page, test }) => {
     const blocked = (await storedState(page)).blocked;
     assert(blocked.priya && blocked.maya && blocked.jonah, 'blocked set lost on reload');
     await page.click('#tab-btn-matches');
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(300);
     assert(!(await page.locator('.match-row').count()), 'blocked matches reappeared');
   });
 });

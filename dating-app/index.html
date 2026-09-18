@@ -528,6 +528,7 @@
     border-bottom-right-radius: 6px;
   }
   .bubble .t { display: block; font-size: 11px; opacity: .65; margin-top: 3px; }
+  .bubble .receipt { display: block; font-size: 10px; opacity: .7; margin-top: 1px; text-align: right; font-weight: 700; }
   .bubble.typing { color: var(--muted); font-style: italic; }
   .chat-day { align-self: center; font-size: 12px; color: var(--muted); padding: 6px 0; }
   .composer {
@@ -900,14 +901,13 @@
         <p class="tagline">Meet people who feel familiar. Fewer swipes, better conversations.</p>
       </div>
       <div class="auth-actions">
-        <button class="btn" id="btn-goto-signup">Create account</button>
-        <button class="btn ghost" id="btn-goto-login">Log in</button>
+        <button class="btn" id="btn-get-started">Continue with phone</button>
       </div>
     </div>
   </section>
 
-  <!-- ============ SIGN UP ============ -->
-  <section class="screen" id="screen-signup" aria-label="Sign up">
+  <!-- ============ PHONE ============ -->
+  <section class="screen" id="screen-phone" aria-label="Phone number">
     <div class="auth-wrap">
       <div class="auth-top">
         <button class="back-btn" data-back="screen-welcome">
@@ -915,48 +915,15 @@
           Back
         </button>
       </div>
-      <h2 class="auth-title">First, the basics</h2>
-      <p class="auth-sub">This is a prototype — nothing leaves your browser.</p>
-      <form class="auth-form" id="form-signup" novalidate>
-        <div class="form-row">
-          <div class="field">
-            <label for="su-name">First name</label>
-            <input id="su-name" type="text" autocomplete="given-name" placeholder="Alex">
-          </div>
-          <div class="field" style="max-width:96px">
-            <label for="su-age">Age</label>
-            <input id="su-age" type="number" min="18" max="99" inputmode="numeric" placeholder="27">
-          </div>
-        </div>
+      <h2 class="auth-title">What's your number?</h2>
+      <p class="auth-sub">We'll text you a code — no passwords. Prototype: the code appears on screen instead of an SMS.</p>
+      <form class="auth-form" id="form-phone" novalidate>
         <div class="field">
-          <label for="su-email">Email</label>
-          <input id="su-email" type="email" autocomplete="email" placeholder="you@example.com">
+          <label for="ph-number">Phone number</label>
+          <input id="ph-number" type="tel" autocomplete="tel" placeholder="+13035551234">
         </div>
-        <div class="field">
-          <label for="su-password">Password</label>
-          <input id="su-password" type="password" autocomplete="new-password" placeholder="At least 6 characters">
-        </div>
-        <div class="form-row">
-          <div class="field">
-            <label for="su-gender">I am</label>
-            <select id="su-gender">
-              <option>Woman</option>
-              <option>Man</option>
-              <option>Non-binary</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="su-pref">Show me</label>
-            <select id="su-pref">
-              <option>Everyone</option>
-              <option>Women</option>
-              <option>Men</option>
-              <option>Non-binary people</option>
-            </select>
-          </div>
-        </div>
-        <p class="form-error" id="su-error" role="alert"></p>
-        <button class="btn" type="submit">Continue</button>
+        <p class="form-error" id="ph-error" role="alert"></p>
+        <button class="btn" type="submit" id="btn-send-code">Send code</button>
         <p class="legal-inline">By continuing you agree to our
           <button type="button" class="link" id="link-tos">Terms of Service</button> and
           <button type="button" class="link" id="link-privacy">Privacy Policy</button>.</p>
@@ -964,18 +931,64 @@
     </div>
   </section>
 
-  <!-- ============ PROFILE SETUP ============ -->
-  <section class="screen" id="screen-setup" aria-label="Profile setup">
+  <!-- ============ OTP ============ -->
+  <section class="screen" id="screen-otp" aria-label="Verification code">
     <div class="auth-wrap">
       <div class="auth-top">
-        <button class="back-btn" data-back="screen-signup">
+        <button class="back-btn" data-back="screen-phone">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           Back
         </button>
       </div>
+      <h2 class="auth-title">Enter the code</h2>
+      <p class="auth-sub">Sent to <span id="otp-phone"></span></p>
+      <form class="auth-form" id="form-otp" novalidate>
+        <div class="field">
+          <label for="otp-code">6-digit code</label>
+          <input id="otp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+        </div>
+        <p class="form-error" id="otp-error" role="alert"></p>
+        <button class="btn" type="submit">Verify</button>
+        <button class="btn ghost" type="button" id="btn-resend">Resend code</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ PROFILE SETUP ============ -->
+  <section class="screen" id="screen-setup" aria-label="Profile setup">
+    <div class="auth-wrap">
       <h2 class="auth-title">Make it yours</h2>
-      <p class="auth-sub">A short bio and a few interests go a long way.</p>
+      <p class="auth-sub">Your age is shown on your card — your birthdate never is.</p>
       <form class="auth-form" id="form-setup" novalidate>
+        <div class="form-row">
+          <div class="field">
+            <label for="set-name">First name</label>
+            <input id="set-name" type="text" autocomplete="given-name" placeholder="Alex">
+          </div>
+          <div class="field">
+            <label for="set-birthdate">Birthdate</label>
+            <input id="set-birthdate" type="date">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="set-gender">I am</label>
+            <select id="set-gender">
+              <option value="woman">Woman</option>
+              <option value="man">Man</option>
+              <option value="nonbinary">Non-binary</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="set-pref">Show me</label>
+            <select id="set-pref">
+              <option value="everyone">Everyone</option>
+              <option value="woman">Women</option>
+              <option value="man">Men</option>
+              <option value="nonbinary">Non-binary people</option>
+            </select>
+          </div>
+        </div>
         <div class="field">
           <label for="set-bio">Bio</label>
           <textarea id="set-bio" maxlength="160" placeholder="Sunday market regular. Will judge you kindly by your coffee order."></textarea>
@@ -990,32 +1003,6 @@
         </div>
         <p class="form-error" id="set-error" role="alert"></p>
         <button class="btn" type="submit">Start matching</button>
-      </form>
-    </div>
-  </section>
-
-  <!-- ============ LOG IN ============ -->
-  <section class="screen" id="screen-login" aria-label="Log in">
-    <div class="auth-wrap">
-      <div class="auth-top">
-        <button class="back-btn" data-back="screen-welcome">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          Back
-        </button>
-      </div>
-      <h2 class="auth-title">Welcome back</h2>
-      <p class="auth-sub">Any email and password work — it's all pretend.</p>
-      <form class="auth-form" id="form-login" novalidate>
-        <div class="field">
-          <label for="li-email">Email</label>
-          <input id="li-email" type="email" autocomplete="email" placeholder="you@example.com">
-        </div>
-        <div class="field">
-          <label for="li-password">Password</label>
-          <input id="li-password" type="password" autocomplete="current-password" placeholder="••••••••">
-        </div>
-        <p class="form-error" id="li-error" role="alert"></p>
-        <button class="btn" type="submit">Log in</button>
       </form>
     </div>
   </section>
@@ -1162,6 +1149,10 @@
         <input type="range" id="f-dist" min="1" max="50" value="25">
       </div>
       <div class="field">
+        <label id="label-f-genders">Show me</label>
+        <div class="chips" id="f-genders" role="group" aria-labelledby="label-f-genders"></div>
+      </div>
+      <div class="field">
         <label id="label-f-interests">Shared interests (optional)</label>
         <div class="chips" id="f-interests" role="group" aria-labelledby="label-f-interests"></div>
       </div>
@@ -1277,6 +1268,12 @@
             <span id="safety-block-label">Block</span>
           </button>
         </div>
+        <div class="safety-list" id="safety-unmatch-wrap" hidden>
+          <button class="safety-opt" id="btn-unmatch-open">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7a4 4 0 0 1 0 8h-2M7 15a4 4 0 0 1 0-8h2M4 4l16 16"/></svg>
+            <span id="safety-unmatch-label">Unmatch</span>
+          </button>
+        </div>
         <p class="safety-note">Reports are confidential. Blocking is immediate and works both ways.</p>
       </div>
 
@@ -1290,6 +1287,12 @@
         <p class="safety-note">Thank you for helping keep Maktub safe. Our team reviews every report within 24 hours. They won't know you reported them.</p>
         <button class="btn ghost" id="btn-report-block">Also block them</button>
         <button class="btn" id="btn-safety-done">Done</button>
+      </div>
+
+      <div id="safety-unmatch-confirm" class="safety-view" hidden>
+        <p class="safety-note" id="safety-unmatch-note">Unmatch? The conversation closes for both of you.</p>
+        <button class="btn" id="btn-unmatch-confirm">Unmatch</button>
+        <button class="btn ghost" id="btn-unmatch-cancel">Cancel</button>
       </div>
 
       <div id="safety-block-confirm" class="safety-view" hidden>
@@ -1319,7 +1322,16 @@
 (function () {
   "use strict";
 
-  /* ---------------- data ---------------- */
+  /* ================================================================
+     Maktub prototype — client + in-page mock backend.
+     The mock backend implements docs/spec/02-api-contract.md: REST
+     routes, the error envelope, rotating tokens, idempotent swipes,
+     cursor pagination, and the WebSocket frame set. The client talks
+     to it only through apiCall()/socket, so swapping in a real
+     backend is a transport change.
+     ================================================================ */
+
+  /* ---------------- shared constants ---------------- */
 
   var INTERESTS = ["Hiking", "Coffee", "Film", "Live music", "Cooking", "Climbing",
     "Books", "Travel", "Yoga", "Photography", "Running", "Board games",
@@ -1327,8 +1339,24 @@
 
   var HUES = [[338, 24], [262, 200], [16, 340], [152, 190], [206, 258], [42, 8]];
 
-  // Mock "photo" scenes (pure CSS, no assets). kind -> label + layered background.
-  // 'lowlight' always fails simulated moderation, so the rejected state is demonstrable.
+  var GENDERS = [
+    { code: "woman", label: "Women" },
+    { code: "man", label: "Men" },
+    { code: "nonbinary", label: "Non-binary" }
+  ];
+
+  // ReportReason enum (contract: POST /reports)
+  var REPORT_REASONS = [
+    { code: "spam_or_fake", label: "Fake profile or spam" },
+    { code: "inappropriate_messages", label: "Inappropriate messages" },
+    { code: "inappropriate_photos", label: "Inappropriate photos" },
+    { code: "underage", label: "Underage or minor" },
+    { code: "safety_concern", label: "Made me feel unsafe" },
+    { code: "other", label: "Other" }
+  ];
+
+  // Mock "photo" scenes. Photo URLs in API responses are opaque tokens the
+  // client passes straight to this map — it never constructs URLs.
   var PHOTO_SCENES = {
     sunset:   { label: "Sunset",    bg: "radial-gradient(circle at 50% 58%, rgba(255,236,179,.95) 0%, rgba(255,236,179,0) 24%), linear-gradient(180deg, #F7B267 0%, #F4845F 55%, #5C374C 100%)" },
     coast:    { label: "Coast",     bg: "linear-gradient(180deg, #A8DADC 0%, #7FBFD4 48%, #F3E2C7 52%, #E8D3AC 100%)" },
@@ -1339,159 +1367,685 @@
     studio:   { label: "Studio",    bg: "radial-gradient(circle at 50% 40%, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 45%), linear-gradient(180deg, #C9ADA7 0%, #9A8C98 100%)" },
     lowlight: { label: "Low light", bg: "radial-gradient(circle at 60% 35%, rgba(120,90,160,.5) 0%, rgba(120,90,160,0) 40%), linear-gradient(180deg, #2B2233 0%, #17121E 100%)" }
   };
-  var MODERATION_MS = 2500;
 
-  // people you can match with. hues -> avatar/card gradient, likesYou -> mutual like on swipe,
-  // seeded -> already matched at first launch, with conversation history.
-  var POOL = [
-    { id: "maya", name: "Maya", age: 28, dist: 4, job: "Photographer",
+  var MODERATION_MS = 2500;
+  var OTP_CODE = "123456";          // prototype "SMS"
+  var ACCESS_TTL_MS = 15 * 60 * 1000;
+
+  /* ================================================================
+     MOCK BACKEND ("server" side)
+     ================================================================ */
+
+  var DB_KEY = "maktub-db-v2";
+  var SESSION_KEY = "maktub-session-v2";
+
+  // Bot users seeded into the server "database".
+  var BOTS = [
+    { id: "maya", name: "Maya", age: 28, gender: "woman", dist: 4, job: "Photographer",
       bio: "Chasing golden hour and the city's best bánh mì.",
-      interests: ["Photography", "Travel", "Coffee"], hues: [206, 258], likesYou: true, seeded: true,
-      replies: ["Okay that's a strong opinion and I respect it.",
+      interests: ["Photography", "Travel", "Coffee"], hue_index: 4, likes_you: true, seeded: true,
+      photos: [], replies: ["Okay that's a strong opinion and I respect it.",
         "Ha! I was literally about to say the same thing.",
         "You free this weekend? There's a print fair on Saturday."] },
-    { id: "jonah", name: "Jonah", age: 29, dist: 6, job: "Barista & writer",
+    { id: "jonah", name: "Jonah", age: 29, gender: "man", dist: 6, job: "Barista & writer",
       bio: "Short stories, long pours.",
-      interests: ["Coffee", "Books", "Film"], hues: [42, 8], likesYou: true, seeded: true,
-      replies: ["That's going straight into a story, fair warning.",
+      interests: ["Coffee", "Books", "Film"], hue_index: 5, likes_you: true, seeded: true,
+      photos: [], replies: ["That's going straight into a story, fair warning.",
         "Strong agree. Also: have you read anything good lately?",
         "I make a mean cortado if you ever want a taste test."] },
-    { id: "priya", name: "Priya", age: 27, dist: 3, job: "Ceramicist",
+    { id: "priya", name: "Priya", age: 27, gender: "woman", dist: 3, job: "Ceramicist",
       bio: "I make bowls on purpose and friends by accident.",
-      interests: ["Art", "Coffee", "Yoga"], hues: [338, 24], likesYou: true, photos: [{ kind: "sunset", status: "approved" }],
+      interests: ["Art", "Coffee", "Yoga"], hue_index: 0, likes_you: true,
+      photos: [{ kind: "sunset", status: "approved" }],
       replies: ["Careful, I already like you.", "Okay, tell me more.",
         "You can come throw a pot sometime. It's messier than it looks."] },
-    { id: "theo", name: "Theo", age: 29, dist: 5, job: "Chef",
+    { id: "theo", name: "Theo", age: 29, gender: "man", dist: 5, job: "Chef",
       bio: "I'll cook, you pick the record.",
-      interests: ["Cooking", "Wine", "Live music"], hues: [16, 340], likesYou: false, photos: [{ kind: "cafe", status: "pending" }],
+      interests: ["Cooking", "Wine", "Live music"], hue_index: 2, likes_you: false,
+      photos: [{ kind: "cafe", status: "pending" }],
       replies: ["Ha, deal.", "What's the last great thing you ate?"] },
-    { id: "amara", name: "Amara", age: 25, dist: 8, job: "Med resident",
+    { id: "amara", name: "Amara", age: 25, gender: "woman", dist: 8, job: "Med resident",
       bio: "Runs on 6am jogs and library naps.",
-      interests: ["Running", "Books", "Dogs"], hues: [152, 190], likesYou: true, photos: [{ kind: "coast", status: "approved" }],
+      interests: ["Running", "Books", "Dogs"], hue_index: 3, likes_you: true,
+      photos: [{ kind: "coast", status: "approved" }],
       replies: ["Ha! My schedule is chaos but I like your energy.",
         "A dog park date is objectively the best first date. Discuss.",
         "Okay you're funny. Keep going."] },
-    { id: "luca", name: "Luca", age: 31, dist: 2, job: "Architect",
+    { id: "luca", name: "Luca", age: 31, gender: "man", dist: 2, job: "Architect",
       bio: "I point at buildings a lot. Warning you now.",
-      interests: ["Photography", "Film", "Travel"], hues: [206, 258], likesYou: false,
-      replies: ["Fair point, well made.", "Which building though?"] },
-    { id: "noor", name: "Noor", age: 26, dist: 12, job: "Climate researcher",
+      interests: ["Photography", "Film", "Travel"], hue_index: 4, likes_you: false,
+      photos: [], replies: ["Fair point, well made.", "Which building though?"] },
+    { id: "noor", name: "Noor", age: 26, gender: "woman", dist: 12, job: "Climate researcher",
       bio: "Half in the mountains, half in spreadsheets.",
-      interests: ["Hiking", "Climbing", "Board games"], hues: [152, 190], likesYou: true, photos: [{ kind: "mountain", status: "approved" }],
+      interests: ["Hiking", "Climbing", "Board games"], hue_index: 3, likes_you: true,
+      photos: [{ kind: "mountain", status: "approved" }],
       replies: ["Counterpoint: sunrise hikes are worth it exactly once a month.",
         "I have a 7-game backlog of Cascadia. Consider this a warning.",
         "You'd survive a long hike with me. I can tell."] },
-    { id: "felix", name: "Felix", age: 28, dist: 6, job: "Bassist",
+    { id: "felix", name: "Felix", age: 28, gender: "man", dist: 6, job: "Bassist",
       bio: "In a band you've almost heard of.",
-      interests: ["Live music", "Film", "Coffee"], hues: [262, 200], likesYou: false,
-      replies: ["Ha! Almost is the operative word.", "Come to a show sometime."] },
-    { id: "ivy", name: "Ivy", age: 24, dist: 9, job: "Illustrator",
+      interests: ["Live music", "Film", "Coffee"], hue_index: 1, likes_you: false,
+      photos: [], replies: ["Ha! Almost is the operative word.", "Come to a show sometime."] },
+    { id: "ivy", name: "Ivy", age: 24, gender: "woman", dist: 9, job: "Illustrator",
       bio: "Draws strangers on the train (flatteringly).",
-      interests: ["Art", "Books", "Dogs"], hues: [338, 24], likesYou: false,
-      replies: ["You'd make a good sketch, for the record.", "Ha, noted!"] },
-    { id: "mateo", name: "Mateo", age: 30, dist: 4, job: "Teacher",
+      interests: ["Art", "Books", "Dogs"], hue_index: 0, likes_you: false,
+      photos: [], replies: ["You'd make a good sketch, for the record.", "Ha, noted!"] },
+    { id: "mateo", name: "Mateo", age: 30, gender: "man", dist: 4, job: "Teacher",
       bio: "Grade-A pun dispenser. Detention for ghosting.",
-      interests: ["Board games", "Cooking", "Running"], hues: [42, 8], likesYou: true,
-      replies: ["Solid answer. Gold star.", "Okay but real question: pineapple on pizza?",
+      interests: ["Board games", "Cooking", "Running"], hue_index: 5, likes_you: true,
+      photos: [], replies: ["Solid answer. Gold star.", "Okay but real question: pineapple on pizza?",
         "You'd like my trivia team. We lose with dignity."] },
-    { id: "sasha", name: "Sasha", age: 27, dist: 15, job: "Pilot",
+    { id: "sasha", name: "Sasha", age: 27, gender: "woman", dist: 15, job: "Pilot",
       bio: "Layovers are just speed-run city tours.",
-      interests: ["Travel", "Surfing", "Wine"], hues: [206, 258], likesYou: false,
-      replies: ["Window seat or aisle? This matters.", "Ha! Safe answer."] },
-    { id: "wren", name: "Wren", age: 26, dist: 7, job: "Florist",
+      interests: ["Travel", "Surfing", "Wine"], hue_index: 4, likes_you: false,
+      photos: [], replies: ["Window seat or aisle? This matters.", "Ha! Safe answer."] },
+    { id: "wren", name: "Wren", age: 26, gender: "woman", dist: 7, job: "Florist",
       bio: "Knows the meaning of every flower. Uses it for gossip.",
-      interests: ["Art", "Hiking", "Coffee"], hues: [152, 190], likesYou: true, photos: [{ kind: "forest", status: "approved" }],
+      interests: ["Art", "Hiking", "Coffee"], hue_index: 3, likes_you: true,
+      photos: [{ kind: "forest", status: "approved" }],
       replies: ["You get yellow acacia. Look it up.",
         "Okay that made me actually laugh.",
         "Bring me a weird flower fact and I'm yours."] },
-    { id: "daniel", name: "Daniel", age: 33, dist: 10, job: "Carpenter",
+    { id: "daniel", name: "Daniel", age: 33, gender: "man", dist: 10, job: "Carpenter",
       bio: "I make sturdy things. Emotionally, also sturdy.",
-      interests: ["Climbing", "Dogs", "Photography"], hues: [16, 340], likesYou: false,
-      replies: ["Measured twice before sending this.", "Ha. Good one."] },
-    { id: "zoe", name: "Zoe", age: 25, dist: 5, job: "Grad student",
+      interests: ["Climbing", "Dogs", "Photography"], hue_index: 2, likes_you: false,
+      photos: [], replies: ["Measured twice before sending this.", "Ha. Good one."] },
+    { id: "zoe", name: "Zoe", age: 25, gender: "woman", dist: 5, job: "Grad student",
       bio: "Thesis: vibes. Methodology: playlists.",
-      interests: ["Yoga", "Books", "Live music"], hues: [262, 200], likesYou: true, photos: [{ kind: "studio", status: "approved" }],
+      interests: ["Yoga", "Books", "Live music"], hue_index: 1, likes_you: true,
+      photos: [{ kind: "studio", status: "approved" }],
       replies: ["Peer review says: you're interesting.",
         "Adding that take to my lit review.",
         "Send me one song that never fails. Choose wisely."] }
   ];
 
-  function personById(id) {
-    for (var i = 0; i < POOL.length; i++) if (POOL[i].id === id) return POOL[i];
-    return null;
+  var db = null;
+
+  function saveDb() {
+    try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch (e) { /* fine */ }
   }
-
-  // Non-approved photos are never rendered for other users (spec non-negotiable 7).
-  function firstApprovedPhoto(person) {
-    var list = person.photos || [];
-    for (var i = 0; i < list.length; i++) if (list[i].status === "approved") return list[i];
-    return null;
-  }
-
-  /* ---------------- state ---------------- */
-
-  var STORE_KEY = "maktub-proto-v1";
-
-  var state = {
-    user: null,               // {name, age, email, gender, pref, bio, interests[], hues}
-    seen: {},                 // id -> "like" | "pass"
-    matches: [],              // [{id, at, unread, lastAt}]
-    convos: {},               // id -> [{from:"me"|"them", text, at}]
-    blocked: {},              // id -> true (both directions, immediate)
-    reports: [],              // [{id, reason, at}]
-    settings: { notifications: true },
-    filters: { ageMin: 21, ageMax: 40, dist: 25, interests: [] },
-    pendingSignup: null,
-    activeChat: null,
-    deck: []                  // ids, top of deck = last element
-  };
-
-  function save() {
+  function loadDb() {
     try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({
-        user: state.user, seen: state.seen, matches: state.matches,
-        convos: state.convos, blocked: state.blocked, reports: state.reports,
-        settings: state.settings, filters: state.filters
-      }));
-    } catch (e) { /* private mode etc. — prototype runs fine without persistence */ }
-  }
-  function load() {
-    try {
-      var raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return false;
-      var d = JSON.parse(raw);
-      if (!d || !d.user) return false;
-      state.user = d.user;
-      state.seen = d.seen || {};
-      state.matches = d.matches || [];
-      state.convos = d.convos || {};
-      state.blocked = d.blocked || {};
-      state.reports = d.reports || [];
-      state.settings = d.settings || { notifications: true };
-      state.filters = d.filters || state.filters;
-      return true;
-    } catch (e) { return false; }
+      var raw = localStorage.getItem(DB_KEY);
+      if (raw) db = JSON.parse(raw);
+    } catch (e) { db = null; }
+    if (!db || !db.users) {
+      db = { users: {}, swipes: {}, matches: {}, blocks: {}, reports: [],
+        otp: {}, access: {}, refresh: {}, s3: {}, seq: 1 };
+    }
+    // (re)seed bots deterministically
+    var year = new Date().getFullYear();
+    BOTS.forEach(function (b) {
+      if (db.users[b.id]) return;
+      db.users[b.id] = {
+        id: b.id, bot: true, name: b.name,
+        birthdate: (year - b.age) + "-06-15",
+        gender: b.gender, bio: b.bio, job: b.job,
+        interests: b.interests.slice(), hue_index: b.hue_index,
+        distance_km: b.dist, likes_you: b.likes_you, seeded: !!b.seeded,
+        replies: b.replies.slice(),
+        photos: b.photos.map(function (p, i) {
+          return { id: "bph_" + b.id + "_" + i, kind: p.kind, status: p.status };
+        }),
+        preferences: null, onboarding_state: "complete"
+      };
+    });
   }
 
-  function seedMatches() {
-    var now = Date.now();
-    POOL.forEach(function (p) {
-      if (!p.seeded) return;
-      state.seen[p.id] = "like";
-      state.matches.push({ id: p.id, at: now - 86400000, unread: p.id === "jonah", lastAt: 0 });
+  function nowIso() { return new Date().toISOString(); }
+  function newId(prefix) { return prefix + "_" + (db.seq++) + "_" + Math.random().toString(36).slice(2, 7); }
+  function ageOf(birthdate) {
+    if (!birthdate) return null;
+    var b = new Date(birthdate + "T00:00:00Z"), n = new Date();
+    var a = n.getUTCFullYear() - b.getUTCFullYear();
+    var m = n.getUTCMonth() - b.getUTCMonth();
+    if (m < 0 || (m === 0 && n.getUTCDate() < b.getUTCDate())) a--;
+    return a;
+  }
+  function apiError(status, code, message, extra) {
+    var e = { code: code, message: message };
+    if (extra) Object.keys(extra).forEach(function (k) { e[k] = extra[k]; });
+    return { status: status, error: e };
+  }
+
+  /* ---------- serializers ---------- */
+
+  function photoUrls(kind) { return { thumb: kind, card: kind, full: kind }; }
+
+  // Only approved photos are ever serialized for other users (spec P0 #7).
+  function serializeCandidate(u) {
+    return {
+      id: u.id, name: u.name, age: ageOf(u.birthdate), gender: u.gender,
+      distance_km: u.distance_km, job: u.job, bio: u.bio,
+      interests: u.interests.slice(), hue_index: u.hue_index,
+      photos: u.photos.filter(function (p) { return p.status === "approved"; })
+        .map(function (p) { return { id: p.id, urls: photoUrls(p.kind) }; })
+    };
+  }
+  function serializeMe(u) {
+    return {
+      id: u.id, phone: u.phone || null, onboarding_state: u.onboarding_state,
+      profile: { name: u.name || null, birthdate: u.birthdate || null,
+        gender: u.gender || null, bio: u.bio || "",
+        interests: (u.interests || []).slice(), hue_index: u.hue_index || 0 },
+      preferences: u.preferences,
+      photos: (u.photos || []).map(function (p) {
+        return { id: p.id, urls: photoUrls(p.kind), moderation_status: p.status, reason: p.reason || null };
+      })
+    };
+  }
+  function partnerOf(m, uid) { return m.users[0] === uid ? m.users[1] : m.users[0]; }
+  function serializeMessage(msg, matchId) {
+    return { id: msg.id, seq: msg.seq, match_id: matchId, sender_id: msg.sender_id,
+      body: msg.body, created_at: msg.created_at, client_id: msg.client_id || null };
+  }
+  function serializeMatch(m, uid) {
+    var partner = db.users[partnerOf(m, uid)];
+    var last = m.msgs.length ? m.msgs[m.msgs.length - 1] : null;
+    return {
+      id: m.id, created_at: m.created_at, user: serializeCandidate(partner),
+      last_message: last ? serializeMessage(last, m.id) : null,
+      unread_count: (m.unread && m.unread[uid]) || 0,
+      their_last_read_seq: (m.last_read && m.last_read[partner.id]) || 0
+    };
+  }
+
+  /* ---------- server behaviors ---------- */
+
+  function issueTokens(uid) {
+    var access = "at_" + Math.random().toString(36).slice(2);
+    var refresh = "rt_" + Math.random().toString(36).slice(2);
+    db.access[access] = { user_id: uid, expires_at: Date.now() + ACCESS_TTL_MS };
+    db.refresh[refresh] = uid;
+    saveDb();
+    return { access_token: access, refresh_token: refresh };
+  }
+  function authUser(token) {
+    var rec = token && db.access[token];
+    if (!rec) throw apiError(401, "token_expired", "Missing or unknown access token");
+    if (rec.expires_at <= Date.now()) throw apiError(401, "token_expired", "Access token expired");
+    var u = db.users[rec.user_id];
+    if (!u) throw apiError(401, "token_expired", "Account no longer exists");
+    return u;
+  }
+  function blockedEither(a, b) { return db.blocks[a + "|" + b] || db.blocks[b + "|" + a]; }
+  function openMatchBetween(a, b) {
+    var found = null;
+    Object.keys(db.matches).forEach(function (id) {
+      var m = db.matches[id];
+      if (!m.closed && m.users.indexOf(a) >= 0 && m.users.indexOf(b) >= 0) found = m;
     });
-    state.convos.maya = [
-      { from: "them", text: "Okay, your bio made me laugh. Hi!", at: now - 86000000 },
-      { from: "me", text: "Ha, mission accomplished. Hi Maya!", at: now - 85000000 },
-      { from: "them", text: "So — film or digital? Answer carefully.", at: now - 84000000 }
-    ];
-    state.convos.jonah = [
-      { from: "them", text: "I've decided your coffee order says everything about you. What is it?", at: now - 7200000 }
-    ];
-    state.matches.forEach(function (m) {
-      var c = state.convos[m.id];
-      if (c && c.length) m.lastAt = c[c.length - 1].at;
+    return found;
+  }
+  function createMatch(a, b, at) {
+    var m = { id: newId("m"), users: [a, b], created_at: at || nowIso(),
+      msgs: [], unread: {}, last_read: {}, closed: null };
+    db.matches[m.id] = m;
+    return m;
+  }
+  function pushMessage(m, senderId, body, clientId) {
+    var msg = { id: newId("msg"), seq: db.seq++, sender_id: senderId,
+      body: body, created_at: nowIso(), client_id: clientId || null };
+    m.msgs.push(msg);
+    var other = partnerOf(m, senderId);
+    m.unread[other] = (m.unread[other] || 0) + 1;
+    return msg;
+  }
+  function closeMatch(m, reason) {
+    if (m.closed) return;
+    m.closed = reason;
+    deliverFrame("match.closed", { match_id: m.id, reason: reason });
+  }
+  function seedDemo(user) {
+    if (user.seeded_demo) return;
+    user.seeded_demo = true;
+    var dayAgo = new Date(Date.now() - 86400000).toISOString();
+    var maya = createMatch(user.id, "maya", dayAgo);
+    ["Okay, your bio made me laugh. Hi!", null, "So — film or digital? Answer carefully."]
+      .forEach(function (body, i) {
+        var msg = pushMessage(maya, i === 1 ? user.id : "maya",
+          body || "Ha, mission accomplished. Hi Maya!");
+        void msg;
+      });
+    maya.unread[user.id] = 0; maya.unread.maya = 0;
+    maya.last_read[user.id] = maya.msgs[maya.msgs.length - 1].seq;
+    maya.last_read.maya = maya.msgs[maya.msgs.length - 1].seq;
+    var jonah = createMatch(user.id, "jonah", dayAgo);
+    pushMessage(jonah, "jonah",
+      "I've decided your coffee order says everything about you. What is it?");
+    jonah.last_read.jonah = 0;
+    db.swipes[user.id + "|maya"] = { direction: "like", match_id: maya.id };
+    db.swipes[user.id + "|jonah"] = { direction: "like", match_id: jonah.id };
+  }
+
+  function scheduleModerationServer(uid, photoId) {
+    setTimeout(function () {
+      var u = db.users[uid];
+      if (!u) return;
+      var photo = (u.photos || []).filter(function (p) { return p.id === photoId; })[0];
+      if (!photo || photo.status !== "pending") return;
+      if (photo.kind === "lowlight") {
+        photo.status = "rejected";
+        photo.reason = "Too dark to verify";
+      } else {
+        photo.status = "approved";
+      }
+      saveDb();
+    }, MODERATION_MS);
+  }
+  function resumeModerationServer(uid) {
+    var u = db.users[uid];
+    if (!u) return;
+    (u.photos || []).forEach(function (p) {
+      if (p.status === "pending") scheduleModerationServer(uid, p.id);
     });
+  }
+
+  // bot conversation engine: reply + read receipt over "WS"
+  function botRespond(m, botId, myId) {
+    var bot = db.users[botId];
+    var used = m.msgs.filter(function (x) { return x.sender_id === botId; }).length;
+    var line = bot.replies[used % bot.replies.length];
+    setTimeout(function () {
+      if (m.closed || !db.users[myId]) return;
+      var reply = pushMessage(m, botId, line);
+      saveDb();
+      deliverFrame("message.new", serializeMessage(reply, m.id));
+      setTimeout(function () {
+        if (m.closed) return;
+        var lastMine = null;
+        m.msgs.forEach(function (x) { if (x.sender_id === myId) lastMine = x; });
+        if (!lastMine) return;
+        m.last_read[botId] = lastMine.seq;
+        m.unread[botId] = 0;
+        saveDb();
+        deliverFrame("message.read",
+          { match_id: m.id, last_message_id: lastMine.id, reader_id: botId });
+      }, 300);
+    }, 1300 + Math.random() * 700);
+  }
+
+  function handleSendMessage(user, matchId, body, clientId) {
+    var m = db.matches[matchId];
+    if (!m || m.users.indexOf(user.id) < 0) throw apiError(404, "not_found", "No such match");
+    if (m.closed) throw apiError(409, "match_closed", "This conversation has ended");
+    if (!body || !String(body).trim()) throw apiError(400, "validation_failed", "Message body required");
+    var msg = pushMessage(m, user.id, String(body).trim(), clientId);
+    saveDb();
+    deliverFrame("message.new", serializeMessage(msg, m.id));
+    var partnerId = partnerOf(m, user.id);
+    if (db.users[partnerId] && db.users[partnerId].bot) botRespond(m, partnerId, user.id);
+    return msg;
+  }
+
+  /* ---------- REST router ---------- */
+
+  function route(method, fullPath, body, token) {
+    var mm;
+    var path = fullPath.split("?")[0];
+    var query = parseQuery(fullPath);
+    body = body || {};
+
+    // --- auth / otp (no bearer) ---
+    if (method === "POST" && path === "/otp/request") {
+      if (!/^\+[1-9]\d{7,14}$/.test(body.phone || "")) {
+        throw apiError(400, "validation_failed", "Phone must be E.164, like +13035551234");
+      }
+      var rec = db.otp[body.phone] || (db.otp[body.phone] = { code: OTP_CODE, sent: [] });
+      var now = Date.now();
+      rec.sent = rec.sent.filter(function (t) { return now - t < 60000; });
+      if (rec.sent.length >= 3) {
+        var retry = Math.ceil((60000 - (now - rec.sent[0])) / 1000);
+        throw apiError(429, "otp_throttled", "Too many codes requested", { retry_after_s: retry });
+      }
+      rec.sent.push(now);
+      saveDb();
+      return { status: 204, data: null };
+    }
+    if (method === "POST" && path === "/otp/verify") {
+      var rec2 = db.otp[body.phone];
+      if (!rec2 || body.code !== rec2.code) {
+        throw apiError(400, "invalid_otp", "That code didn't match");
+      }
+      var user = null;
+      Object.keys(db.users).forEach(function (id) {
+        if (db.users[id].phone === body.phone) user = db.users[id];
+      });
+      if (!user) {
+        user = { id: newId("u"), phone: body.phone, bot: false,
+          name: null, birthdate: null, gender: null, bio: "",
+          interests: [], hue_index: 0, photos: [],
+          preferences: { min_age: 21, max_age: 40, max_distance_km: 25, genders: [], interests: [] },
+          onboarding_state: "profile_incomplete" };
+        db.users[user.id] = user;
+      }
+      var pair = issueTokens(user.id);
+      return { status: 200, data: { access_token: pair.access_token,
+        refresh_token: pair.refresh_token, user: serializeMe(user) } };
+    }
+    if (method === "POST" && path === "/auth/refresh") {
+      var uid = db.refresh[body.refresh_token];
+      if (!uid || !db.users[uid]) throw apiError(401, "token_expired", "Refresh token invalid");
+      delete db.refresh[body.refresh_token]; // rotating
+      var pair2 = issueTokens(uid);
+      return { status: 200, data: pair2 };
+    }
+    if (method === "POST" && path === "/auth/logout") {
+      if (body.refresh_token) delete db.refresh[body.refresh_token];
+      saveDb();
+      return { status: 204, data: null };
+    }
+
+    // --- everything below requires a bearer token ---
+    var me = authUser(token);
+
+    if (method === "POST" && path === "/devices") return { status: 204, data: null };
+    if (method === "GET" && path === "/me") return { status: 200, data: serializeMe(me) };
+
+    if (method === "PATCH" && path === "/me/profile") {
+      if ("birthdate" in body) {
+        var age = ageOf(body.birthdate);
+        if (age === null || isNaN(age)) throw apiError(400, "validation_failed", "Birthdate required");
+        if (age < 18) throw apiError(403, "underage", "You must be 18 or older to use Maktub");
+        me.birthdate = body.birthdate;
+      }
+      ["name", "gender", "bio"].forEach(function (k) { if (k in body) me[k] = body[k]; });
+      if ("interests" in body) me.interests = body.interests.slice();  // prototype extension
+      if ("hue_index" in body) me.hue_index = body.hue_index;          // prototype extension
+      if (me.name && me.birthdate && me.gender && me.onboarding_state !== "complete") {
+        me.onboarding_state = "complete";
+        seedDemo(me);
+      }
+      saveDb();
+      return { status: 200, data: serializeMe(me).profile };
+    }
+    if (method === "PUT" && path === "/me/preferences") {
+      me.preferences = {
+        min_age: body.min_age, max_age: body.max_age,
+        max_distance_km: body.max_distance_km,
+        genders: (body.genders || []).slice(),
+        interests: (body.interests || []).slice()  // prototype extension
+      };
+      saveDb();
+      return { status: 200, data: me.preferences };
+    }
+    if (method === "PUT" && path === "/me/location") {
+      me.location = { lat: body.lat, lon: body.lon };
+      saveDb();
+      return { status: 204, data: null };
+    }
+
+    // --- photos ---
+    if (method === "POST" && path === "/me/photos/presign") {
+      var key = newId("s3key");
+      return { status: 200, data: { upload_url: "mock-s3://" + key, key: key } };
+    }
+    if (method === "POST" && path === "/me/photos/confirm") {
+      var kind = db.s3[body.key];
+      if (!kind) throw apiError(404, "not_found", "Nothing uploaded for that key");
+      if ((me.photos || []).length >= 6) throw apiError(400, "validation_failed", "Photo limit is 6");
+      var photo = { id: newId("ph"), kind: kind, status: "pending" };
+      me.photos.push(photo);
+      saveDb();
+      scheduleModerationServer(me.id, photo.id);
+      return { status: 200, data: { id: photo.id, urls: photoUrls(kind),
+        moderation_status: "pending", reason: null } };
+    }
+    if (method === "PATCH" && path === "/me/photos/order") {
+      var byId = {};
+      me.photos.forEach(function (p) { byId[p.id] = p; });
+      var next = [];
+      (body.ordered_ids || []).forEach(function (id) { if (byId[id]) { next.push(byId[id]); delete byId[id]; } });
+      Object.keys(byId).forEach(function (id) { next.push(byId[id]); });
+      me.photos = next;
+      saveDb();
+      return { status: 204, data: null };
+    }
+    mm = path.match(/^\/me\/photos\/([^/]+)$/);
+    if (method === "DELETE" && mm) {
+      me.photos = me.photos.filter(function (p) { return p.id !== mm[1]; });
+      saveDb();
+      return { status: 204, data: null };
+    }
+
+    // --- discovery + swipes ---
+    if (method === "GET" && path === "/feed") {
+      var prefs = me.preferences || { min_age: 18, max_age: 99, max_distance_km: 50, genders: [], interests: [] };
+      var candidates = [];
+      Object.keys(db.users).forEach(function (id) {
+        var u = db.users[id];
+        if (!u.bot) return;
+        if (db.swipes[me.id + "|" + id]) return;
+        if (blockedEither(me.id, id)) return;
+        if (openMatchBetween(me.id, id)) return;
+        var a = ageOf(u.birthdate);
+        if (a < prefs.min_age || a > prefs.max_age) return;
+        if (u.distance_km > prefs.max_distance_km) return;
+        if (prefs.genders.length && prefs.genders.indexOf(u.gender) < 0) return;
+        if (prefs.interests && prefs.interests.length) {
+          var shared = u.interests.some(function (i) { return prefs.interests.indexOf(i) >= 0; });
+          if (!shared) return;
+        }
+        candidates.push(serializeCandidate(u));
+      });
+      return { status: 200, data: { candidates: candidates, next_cursor: null } };
+    }
+    if (method === "POST" && path === "/swipes") {
+      var target = db.users[body.target_id];
+      if (!target || !target.bot) throw apiError(404, "not_found", "No such user");
+      if (body.direction !== "like" && body.direction !== "pass") {
+        throw apiError(400, "validation_failed", "direction must be like|pass");
+      }
+      var key2 = me.id + "|" + body.target_id;
+      var prior = db.swipes[key2];
+      if (prior) {  // idempotent on (user, target)
+        var priorMatch = prior.match_id ? db.matches[prior.match_id] : null;
+        return { status: 200, data: { match: priorMatch && !priorMatch.closed ? serializeMatch(priorMatch, me.id) : null } };
+      }
+      var swipe = { direction: body.direction, client_id: body.client_id || null, match_id: null };
+      db.swipes[key2] = swipe;
+      var match = null;
+      if (body.direction === "like" && target.likes_you && !blockedEither(me.id, target.id)) {
+        match = createMatch(me.id, target.id, nowIso());
+        swipe.match_id = match.id;
+      }
+      saveDb();
+      return { status: 200, data: { match: match ? serializeMatch(match, me.id) : null } };
+    }
+
+    // --- matches + chat ---
+    if (method === "GET" && path === "/matches") {
+      var mine = [];
+      Object.keys(db.matches).forEach(function (id) {
+        var m = db.matches[id];
+        if (m.closed || m.users.indexOf(me.id) < 0) return;
+        mine.push(serializeMatch(m, me.id));
+      });
+      mine.sort(function (a, b) {
+        var at = a.last_message ? a.last_message.created_at : a.created_at;
+        var bt = b.last_message ? b.last_message.created_at : b.created_at;
+        return bt < at ? -1 : 1;
+      });
+      return { status: 200, data: { matches: mine, next_cursor: null } };
+    }
+    mm = path.match(/^\/matches\/([^/]+)$/);
+    if (method === "DELETE" && mm) {
+      var m1 = db.matches[mm[1]];
+      if (!m1 || m1.users.indexOf(me.id) < 0) throw apiError(404, "not_found", "No such match");
+      closeMatch(m1, "unmatched");
+      saveDb();
+      return { status: 204, data: null };
+    }
+    mm = path.match(/^\/matches\/([^/]+)\/messages$/);
+    if (method === "GET" && mm) {
+      var m2 = db.matches[mm[1]];
+      if (!m2 || m2.users.indexOf(me.id) < 0) throw apiError(404, "not_found", "No such match");
+      var q = query;
+      var limit = Math.min(parseInt(q.limit, 10) || 50, 100);
+      var msgs = m2.msgs.slice();
+      if (q.before) {
+        var idx = -1;
+        msgs.forEach(function (x, i) { if (x.id === q.before) idx = i; });
+        if (idx >= 0) msgs = msgs.slice(0, idx);
+      }
+      var pageAsc = msgs.slice(-limit);
+      var page = pageAsc.slice().reverse(); // newest-first
+      var nextCursor = msgs.length > limit ? pageAsc[0].id : null;
+      return { status: 200, data: {
+        messages: page.map(function (x) { return serializeMessage(x, m2.id); }),
+        next_cursor: nextCursor } };
+    }
+    mm = path.match(/^\/matches\/([^/]+)\/messages$/);
+    if (method === "POST" && mm) {  // REST fallback for WS message.send
+      var msg2 = handleSendMessage(me, mm[1], body.body, body.client_id);
+      return { status: 200, data: serializeMessage(msg2, mm[1]) };
+    }
+    mm = path.match(/^\/matches\/([^/]+)\/read$/);
+    if (method === "POST" && mm) {
+      var m3 = db.matches[mm[1]];
+      if (!m3 || m3.users.indexOf(me.id) < 0) throw apiError(404, "not_found", "No such match");
+      m3.unread[me.id] = 0;
+      var target2 = null;
+      m3.msgs.forEach(function (x) { if (x.id === body.last_message_id) target2 = x; });
+      if (target2) m3.last_read[me.id] = target2.seq;
+      saveDb();
+      return { status: 204, data: null };
+    }
+
+    // --- safety + account ---
+    if (method === "POST" && path === "/blocks") {
+      if (!db.users[body.user_id]) throw apiError(404, "not_found", "No such user");
+      db.blocks[me.id + "|" + body.user_id] = true;
+      Object.keys(db.matches).forEach(function (id) {
+        var m = db.matches[id];
+        if (!m.closed && m.users.indexOf(me.id) >= 0 && m.users.indexOf(body.user_id) >= 0) {
+          closeMatch(m, "blocked");
+        }
+      });
+      saveDb();
+      return { status: 204, data: null };
+    }
+    if (method === "POST" && path === "/reports") {
+      var codes = REPORT_REASONS.map(function (r) { return r.code; });
+      if (codes.indexOf(body.reason) < 0) throw apiError(400, "validation_failed", "Unknown reason");
+      if (!db.users[body.user_id]) throw apiError(404, "not_found", "No such user");
+      db.reports.push({ reporter_id: me.id, user_id: body.user_id,
+        reason: body.reason, detail: body.detail || null, at: nowIso() });
+      saveDb();
+      return { status: 204, data: null };
+    }
+    if (method === "DELETE" && path === "/me") {
+      Object.keys(db.matches).forEach(function (id) {
+        var m = db.matches[id];
+        if (!m.closed && m.users.indexOf(me.id) >= 0) closeMatch(m, "account_deleted");
+      });
+      delete db.users[me.id];
+      Object.keys(db.access).forEach(function (t) { if (db.access[t].user_id === me.id) delete db.access[t]; });
+      Object.keys(db.refresh).forEach(function (t) { if (db.refresh[t] === me.id) delete db.refresh[t]; });
+      saveDb();
+      return { status: 204, data: null };
+    }
+    if (method === "POST" && path === "/me/export") {
+      return { status: 202, data: { status: "accepted" } };
+    }
+
+    throw apiError(404, "not_found", "No route: " + method + " " + path);
+  }
+
+  function parseQuery(path) {
+    var out = {}, qs = path.split("?")[1];
+    if (!qs) return out;
+    qs.split("&").forEach(function (kv) {
+      var p = kv.split("=");
+      out[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || "");
+    });
+    return out;
+  }
+
+  // simulated network: tiny latency + promise interface
+  function serverFetch(method, path, body, token) {
+    return new Promise(function (resolve, reject) {
+      setTimeout(function () {
+        try { resolve(route(method, path, body, token)); }
+        catch (e) { reject(e.error ? { status: e.status, code: e.error.code, message: e.error.message, retry_after_s: e.error.retry_after_s } : e); }
+      }, 20);
+    });
+  }
+  function mockS3Put(uploadUrl, kind) {
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        db.s3[uploadUrl.replace("mock-s3://", "")] = kind;
+        saveDb();
+        resolve({ status: 200 });
+      }, 80);
+    });
+  }
+
+  // "WebSocket": server -> client frame delivery
+  var frameHandlers = {};
+  function onFrame(type, fn) { (frameHandlers[type] = frameHandlers[type] || []).push(fn); }
+  function deliverFrame(type, data) {
+    setTimeout(function () {
+      (frameHandlers[type] || []).forEach(function (fn) {
+        try { fn(data); } catch (e) { /* handler error should not kill delivery */ }
+      });
+    }, 90);
+  }
+
+  /* ================================================================
+     CLIENT
+     ================================================================ */
+
+  var session = null;   // { access, refresh, user_id, settings }
+  var me = null;        // serialized /me
+  var deck = [];        // candidates; top of deck = last element
+  var matchesCache = [];
+  var activeMatchId = null;
+  var chatMsgs = [];
+  var pendingPhone = null;
+  var safetyTarget = null;   // { userId, matchId|null }
+  var typingTimer = null, resendTimer = null, pollTimer = null;
+
+  function saveSession() {
+    try {
+      if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      else localStorage.removeItem(SESSION_KEY);
+    } catch (e) { /* fine */ }
+  }
+  function loadSession() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      session = raw ? JSON.parse(raw) : null;
+    } catch (e) { session = null; }
+    if (session && !session.settings) session.settings = { notifications: true };
+  }
+
+  function refreshTokens() {
+    return serverFetch("POST", "/auth/refresh", { refresh_token: session.refresh })
+      .then(function (res) {
+        session.access = res.data.access_token;
+        session.refresh = res.data.refresh_token;
+        saveSession();
+      });
+  }
+  // contract: on 401 token_expired, refresh once and replay; refresh failure wipes the session
+  function apiCall(method, path, body) {
+    return serverFetch(method, path, body, session && session.access)
+      .then(function (res) { return res.data; })
+      .catch(function (err) {
+        if (err && err.code === "token_expired" && session && session.refresh) {
+          return refreshTokens().then(
+            function () {
+              return serverFetch(method, path, body, session.access)
+                .then(function (res) { return res.data; });
+            },
+            function () { resetSession(); throw err; });
+        }
+        throw err;
+      });
+  }
+  function uuid() {
+    return "c-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
   }
 
   /* ---------------- tiny dom helpers ---------------- */
@@ -1506,24 +2060,24 @@
   function grad(hues, deg) {
     return "linear-gradient(" + (deg || 135) + "deg, hsl(" + hues[0] + " 62% 52%), hsl(" + hues[1] + " 70% 60%))";
   }
-  function initials(name) { return name.trim().charAt(0).toUpperCase(); }
-  function setAvatar(node, name, hues, size) {
+  function huesOf(hueIndex) { return HUES[hueIndex || 0]; }
+  function initials(name) { return (name || "?").trim().charAt(0).toUpperCase(); }
+  function setAvatar(node, name, hues) {
     node.textContent = initials(name);
     node.style.background = grad(hues);
-    if (size) { node.style.width = size + "px"; node.style.height = size + "px"; }
   }
-  function timeLabel(at) {
-    if (!at) return "";
-    var diff = Date.now() - at;
+  function timeLabel(iso) {
+    if (!iso) return "";
+    var diff = Date.now() - new Date(iso).getTime();
     if (diff < 60000) return "Just now";
     if (diff < 3600000) return Math.round(diff / 60000) + "m";
     if (diff < 86400000) return Math.round(diff / 3600000) + "h";
     return Math.round(diff / 86400000) + "d";
   }
-  function clock(at) {
-    var d = new Date(at);
-    var h = d.getHours(), m = d.getMinutes();
-    return (h % 12 || 12) + ":" + (m < 10 ? "0" : "") + m + (h < 12 ? " am" : " pm");
+  function clock(iso) {
+    var d = new Date(iso);
+    var h = d.getHours(), mi = d.getMinutes();
+    return (h % 12 || 12) + ":" + (mi < 10 ? "0" : "") + mi + (h < 12 ? " am" : " pm");
   }
   var toastTimer = null;
   function toast(msg) {
@@ -1532,6 +2086,9 @@
     t.classList.add("show");
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2200);
+  }
+  function friendlyError(err) {
+    return (err && err.message) || "Something went wrong — try again.";
   }
 
   /* ---------------- navigation ---------------- */
@@ -1546,14 +2103,14 @@
       $("view-" + t).classList.toggle("active", t === name);
       $("tab-btn-" + t).classList.toggle("active", t === name);
     });
-    if (name === "matches") renderMatches();
+    if (name === "matches") refreshMatches().then(renderMatches);
     if (name === "profile") renderProfile();
     if (name === "discover") renderDeck();
   }
   document.querySelectorAll("[data-back]").forEach(function (b) {
     b.addEventListener("click", function () {
       var target = b.getAttribute("data-back");
-      if (target === "screen-app") { showScreen("screen-app"); showTab("matches"); }
+      if (target === "screen-app") { activeMatchId = null; showScreen("screen-app"); showTab("matches"); }
       else showScreen(target);
     });
   });
@@ -1561,15 +2118,18 @@
     b.addEventListener("click", function () { showTab(b.getAttribute("data-tab")); });
   });
 
-  /* ---------------- interest chip groups ---------------- */
+  /* ---------------- chip groups ---------------- */
 
-  function buildChips(containerId, selected, max) {
+  function buildChips(containerId, options, selected, max) {
     var box = $(containerId);
     box.textContent = "";
-    INTERESTS.forEach(function (name) {
-      var c = el("button", "chip", name);
+    options.forEach(function (opt) {
+      var label = typeof opt === "string" ? opt : opt.label;
+      var value = typeof opt === "string" ? opt : opt.code;
+      var c = el("button", "chip", label);
       c.type = "button";
-      c.setAttribute("aria-pressed", selected.indexOf(name) >= 0 ? "true" : "false");
+      c.dataset.value = value;
+      c.setAttribute("aria-pressed", selected.indexOf(value) >= 0 ? "true" : "false");
       c.addEventListener("click", function () {
         var on = c.getAttribute("aria-pressed") === "true";
         if (!on && max && box.querySelectorAll('[aria-pressed="true"]').length >= max) {
@@ -1583,7 +2143,7 @@
   }
   function chipValues(containerId) {
     var out = [];
-    $(containerId).querySelectorAll('[aria-pressed="true"]').forEach(function (c) { out.push(c.textContent); });
+    $(containerId).querySelectorAll('[aria-pressed="true"]').forEach(function (c) { out.push(c.dataset.value); });
     return out;
   }
   function buildSwatches(containerId, selectedIdx) {
@@ -1602,129 +2162,185 @@
       box.appendChild(s);
     });
   }
-  function swatchValue(containerId) {
+  function swatchIndex(containerId) {
     var kids = $(containerId).querySelectorAll(".swatch");
-    for (var i = 0; i < kids.length; i++) if (kids[i].getAttribute("aria-pressed") === "true") return HUES[i];
-    return HUES[0];
+    for (var i = 0; i < kids.length; i++) if (kids[i].getAttribute("aria-pressed") === "true") return i;
+    return 0;
   }
 
-  /* ---------------- auth ---------------- */
+  /* ---------------- auth: phone -> otp -> profile ---------------- */
 
-  $("btn-goto-signup").addEventListener("click", function () {
-    buildChips("setup-interests", [], 6);
-    buildSwatches("setup-swatches", 0);
-    showScreen("screen-signup");
+  $("btn-get-started").addEventListener("click", function () {
+    $("ph-error").textContent = "";
+    showScreen("screen-phone");
   });
-  $("btn-goto-login").addEventListener("click", function () { showScreen("screen-login"); });
 
-  $("form-signup").addEventListener("submit", function (ev) {
+  function requestOtp(phone, errNode) {
+    return apiCall("POST", "/otp/request", { phone: phone }).then(function () {
+      toast("Prototype SMS — your code is " + OTP_CODE);
+      startResendCooldown(30);
+    }, function (err) {
+      if (err.code === "otp_throttled") {
+        errNode.textContent = "Too many codes — try again in " + err.retry_after_s + "s.";
+        startResendCooldown(err.retry_after_s);
+      } else {
+        errNode.textContent = friendlyError(err);
+      }
+      throw err;
+    });
+  }
+  function startResendCooldown(seconds) {
+    var btn = $("btn-resend");
+    var left = seconds;
+    clearInterval(resendTimer);
+    btn.disabled = true;
+    btn.textContent = "Resend code (" + left + "s)";
+    resendTimer = setInterval(function () {
+      left--;
+      if (left <= 0) {
+        clearInterval(resendTimer);
+        btn.disabled = false;
+        btn.textContent = "Resend code";
+      } else {
+        btn.textContent = "Resend code (" + left + "s)";
+      }
+    }, 1000);
+  }
+
+  $("form-phone").addEventListener("submit", function (ev) {
     ev.preventDefault();
-    var name = $("su-name").value.trim();
-    var age = parseInt($("su-age").value, 10);
-    var email = $("su-email").value.trim();
-    var pass = $("su-password").value;
-    var err = "";
-    if (!name) err = "Tell us your first name.";
-    else if (!age || age < 18) err = "You need to be 18 or older.";
-    else if (age > 99) err = "That age seems… ambitious.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err = "That email doesn't look right.";
-    else if (pass.length < 6) err = "Password needs at least 6 characters.";
-    $("su-error").textContent = err;
-    if (err) return;
-    state.pendingSignup = {
-      name: name, age: age, email: email,
-      gender: $("su-gender").value, pref: $("su-pref").value
-    };
-    showScreen("screen-setup");
+    var phone = $("ph-number").value.replace(/[\s().-]/g, "");
+    $("ph-error").textContent = "";
+    requestOtp(phone, $("ph-error")).then(function () {
+      pendingPhone = phone;
+      $("otp-phone").textContent = phone;
+      $("otp-code").value = "";
+      $("otp-error").textContent = "";
+      showScreen("screen-otp");
+    }, function () { /* error already shown */ });
   });
+
+  $("btn-resend").addEventListener("click", function () {
+    requestOtp(pendingPhone, $("otp-error")).catch(function () {});
+  });
+
+  $("form-otp").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    $("otp-error").textContent = "";
+    apiCall("POST", "/otp/verify", { phone: pendingPhone, code: $("otp-code").value.trim() })
+      .then(function (data) {
+        session = { access: data.access_token, refresh: data.refresh_token,
+          user_id: data.user.id, settings: { notifications: true } };
+        saveSession();
+        me = data.user;
+        if (me.onboarding_state === "complete") {
+          enterApp().then(function () { toast("Welcome back, " + me.profile.name + "!"); });
+        } else {
+          prepSetup();
+          showScreen("screen-setup");
+        }
+      }, function (err) {
+        $("otp-error").textContent = err.code === "invalid_otp"
+          ? "That code didn't match — check and try again." : friendlyError(err);
+      });
+  });
+
+  function prepSetup() {
+    $("set-name").value = "";
+    $("set-birthdate").value = "";
+    $("set-bio").value = "";
+    $("set-error").textContent = "";
+    buildChips("setup-interests", INTERESTS, [], 6);
+    buildSwatches("setup-swatches", 0);
+  }
 
   $("form-setup").addEventListener("submit", function (ev) {
     ev.preventDefault();
+    var name = $("set-name").value.trim();
+    var birthdate = $("set-birthdate").value;
     var picked = chipValues("setup-interests");
-    if (picked.length < 3) { $("set-error").textContent = "Pick at least 3 interests."; return; }
-    $("set-error").textContent = "";
-    var u = state.pendingSignup || { name: "You", age: 27, email: "", gender: "", pref: "Everyone" };
-    u.bio = $("set-bio").value.trim() || "Just here to see how this prototype feels.";
-    u.interests = picked;
-    u.hues = swatchValue("setup-swatches");
-    enter(u, true);
-  });
-
-  $("form-login").addEventListener("submit", function (ev) {
-    ev.preventDefault();
-    var email = $("li-email").value.trim();
-    var pass = $("li-password").value;
     var err = "";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err = "That email doesn't look right.";
-    else if (!pass) err = "Enter any password — we're not picky here.";
-    $("li-error").textContent = err;
+    if (!name) err = "Tell us your first name.";
+    else if (!birthdate) err = "Add your birthdate.";
+    else if (picked.length < 3) err = "Pick at least 3 interests.";
+    $("set-error").textContent = err;
     if (err) return;
-    if (state.user) { enter(state.user, false); return; }
-    enter({
-      name: "Alex", age: 27, email: email, gender: "Non-binary", pref: "Everyone",
-      bio: "Returning explorer of this fine prototype.",
-      interests: ["Coffee", "Film", "Hiking"], hues: HUES[1]
-    }, true);
+    var showMe = $("set-pref").value;
+    apiCall("PATCH", "/me/profile", {
+      name: name, birthdate: birthdate, gender: $("set-gender").value,
+      bio: $("set-bio").value.trim() || "Just here to see how this prototype feels.",
+      interests: picked, hue_index: swatchIndex("setup-swatches")
+    }).then(function () {
+      return apiCall("PUT", "/me/preferences", {
+        min_age: 21, max_age: 40, max_distance_km: 25,
+        genders: showMe === "everyone" ? [] : [showMe], interests: []
+      });
+    }).then(function () {
+      return apiCall("PUT", "/me/location", { lat: 39.7392, lon: -104.9903 });
+    }).then(function () {
+      if (session.settings.notifications) {
+        return apiCall("POST", "/devices", { push_token: "mock-" + session.user_id, platform: "ios" });
+      }
+    }).then(function () {
+      return apiCall("GET", "/me");
+    }).then(function (data) {
+      me = data;
+      return enterApp();
+    }).then(function () {
+      toast("Welcome, " + me.profile.name + "!");
+    }).catch(function (err2) {
+      // the 18+ hard stop is server-enforced: `underage` from PATCH /me/profile
+      $("set-error").textContent = err2.code === "underage"
+        ? "You must be 18 or older to use Maktub." : friendlyError(err2);
+    });
   });
-
-  function enter(user, fresh) {
-    state.user = user;
-    if (!state.user.photos) state.user.photos = [];
-    if (fresh) {
-      state.seen = {}; state.matches = []; state.convos = {};
-      state.blocked = {}; state.reports = [];
-      state.settings = { notifications: true };
-      state.filters = { ageMin: 21, ageMax: 40, dist: 25, interests: [] };
-      seedMatches();
-    }
-    save();
-    rebuildDeck();
-    showScreen("screen-app");
-    showTab("discover");
-    updateBadges();
-    if (fresh) toast("Welcome, " + user.name + "!");
-  }
 
   function resetSession() {
-    state.user = null; state.pendingSignup = null; state.activeChat = null;
-    state.seen = {}; state.matches = []; state.convos = {}; state.deck = [];
-    state.blocked = {}; state.reports = [];
-    state.settings = { notifications: true };
-    try { localStorage.removeItem(STORE_KEY); } catch (e) { /* fine */ }
+    session = null; me = null; deck = []; matchesCache = [];
+    activeMatchId = null; chatMsgs = []; pendingPhone = null;
+    clearInterval(pollTimer);
+    saveSession();
     showScreen("screen-welcome");
   }
-  function logOut() { resetSession(); toast("Logged out"); }
+  function logOut() {
+    var rt = session && session.refresh;
+    apiCall("POST", "/auth/logout", { refresh_token: rt }).catch(function () {});
+    resetSession();
+    toast("Logged out");
+  }
   $("btn-logout").addEventListener("click", logOut);
+
+  /* ---------------- app entry ---------------- */
+
+  function enterApp() {
+    resumeModerationServer(session.user_id);
+    return Promise.all([refreshFeed(), refreshMatches()]).then(function () {
+      showScreen("screen-app");
+      showTab("discover");
+      updateBadges();
+      pollModeration();
+    });
+  }
 
   /* ---------------- deck ---------------- */
 
-  function passesFilters(p) {
-    var f = state.filters;
-    if (p.age < f.ageMin || p.age > f.ageMax) return false;
-    if (p.dist > f.dist) return false;
-    if (f.interests.length) {
-      var shared = p.interests.some(function (i) { return f.interests.indexOf(i) >= 0; });
-      if (!shared) return false;
-    }
-    return true;
-  }
-  function rebuildDeck() {
-    state.deck = POOL
-      .filter(function (p) { return !state.blocked[p.id] && !(p.id in state.seen) && passesFilters(p); })
-      .map(function (p) { return p.id; })
-      .reverse(); // top card = last element
+  function refreshFeed() {
+    return apiCall("GET", "/feed?limit=25").then(function (data) {
+      deck = data.candidates.slice().reverse(); // top of deck = last element
+      return data.candidates.length;
+    });
   }
 
   function makeCard(p) {
     var card = el("div", "deck-card");
     card.dataset.id = p.id;
     var art = el("div", "art");
-    var lead = firstApprovedPhoto(p);
+    var lead = p.photos && p.photos.length ? p.photos[0] : null;
     if (lead) {
-      art.style.background = PHOTO_SCENES[lead.kind].bg;
+      art.style.background = PHOTO_SCENES[lead.urls.card].bg;
       card.dataset.photo = "1";
     } else {
-      art.style.background = grad(p.hues, 160);
+      art.style.background = grad(huesOf(p.hue_index), 160);
       art.appendChild(el("span", "initials", initials(p.name)));
       card.dataset.photo = "0";
     }
@@ -1739,10 +2355,9 @@
     var name = el("h3", "card-name", p.name + " ");
     name.appendChild(el("span", "age", String(p.age)));
     info.appendChild(name);
-
     var meta = el("p", "card-meta");
     meta.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 21s-7-5.1-7-11a7 7 0 0 1 14 0c0 5.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>';
-    meta.appendChild(document.createTextNode(p.dist + " km away · " + p.job));
+    meta.appendChild(document.createTextNode(p.distance_km + " km away · " + p.job));
     info.appendChild(meta);
     info.appendChild(el("p", "card-bio", p.bio));
     var tags = el("div", "card-tags");
@@ -1755,15 +2370,15 @@
     safety.setAttribute("aria-label", "Report or block " + p.name);
     safety.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4m0 1h13l-2.5 4L17 13H4"/></svg>';
     safety.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
-    safety.addEventListener("click", function (ev) { ev.stopPropagation(); openSafety(p.id); });
+    safety.addEventListener("click", function (ev) { ev.stopPropagation(); openSafety(p.id, null); });
     card.appendChild(safety);
     return card;
   }
 
   function renderDeck() {
-    var deck = $("deck");
-    deck.textContent = "";
-    if (!state.deck.length) {
+    var deckEl = $("deck");
+    deckEl.textContent = "";
+    if (!deck.length) {
       var empty = el("div", "deck-empty");
       empty.innerHTML = '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 21s-7.5-4.7-10-9.3C.4 8.7 2 5 5.5 5c2 0 3.4 1.1 4.2 2.4C10 8.7 10.7 10 12 10s2-1.3 2.3-2.6C15.1 6.1 16.5 5 18.5 5 22 5 23.6 8.7 22 11.7 19.5 16.3 12 21 12 21z"/></svg>';
       empty.appendChild(el("h3", null, "You're all caught up"));
@@ -1772,16 +2387,15 @@
       widen.style.width = "auto";
       widen.addEventListener("click", openFilters);
       empty.appendChild(widen);
-      deck.appendChild(empty);
+      deckEl.appendChild(empty);
       return;
     }
-    // render at most the top two cards
-    var ids = state.deck.slice(-2);
-    ids.forEach(function (id, idx) {
-      var card = makeCard(personById(id));
-      var isTop = idx === ids.length - 1;
+    var cards = deck.slice(-2);
+    cards.forEach(function (p, idx) {
+      var card = makeCard(p);
+      var isTop = idx === cards.length - 1;
       if (!isTop) card.classList.add("under");
-      deck.appendChild(card);
+      deckEl.appendChild(card);
       if (isTop) attachSwipe(card);
     });
   }
@@ -1803,10 +2417,8 @@
       if (!active) return;
       dx = ev.clientX - startX; dy = ev.clientY - startY;
       card.style.transform = "translate(" + dx + "px," + (dy * 0.35) + "px) rotate(" + (dx * 0.055) + "deg)";
-      var likeStamp = card.querySelector(".stamp.like");
-      var nopeStamp = card.querySelector(".stamp.nope");
-      likeStamp.style.opacity = Math.min(1, Math.max(0, dx / 80));
-      nopeStamp.style.opacity = Math.min(1, Math.max(0, -dx / 80));
+      card.querySelector(".stamp.like").style.opacity = Math.min(1, Math.max(0, dx / 80));
+      card.querySelector(".stamp.nope").style.opacity = Math.min(1, Math.max(0, -dx / 80));
     });
     function release() {
       if (!active) return;
@@ -1824,24 +2436,26 @@
     card.addEventListener("pointercancel", release);
   }
 
-  function commitSwipe(verdict) {
-    if (!state.deck.length) return;
-    var id = state.deck.pop();
-    var p = personById(id);
-    state.seen[id] = verdict;
+  function commitSwipe(direction) {
+    if (!deck.length) return;
+    var p = deck.pop();
     var card = topCardEl();
     if (card) {
-      var fly = verdict === "like" ? 1 : -1;
-      card.querySelector(".stamp." + (verdict === "like" ? "like" : "nope")).style.opacity = 1;
+      var fly = direction === "like" ? 1 : -1;
+      card.querySelector(".stamp." + (direction === "like" ? "like" : "nope")).style.opacity = 1;
       card.style.transform = "translate(" + (fly * 480) + "px,-40px) rotate(" + (fly * 24) + "deg)";
       card.style.opacity = "0";
     }
-    save();
-    setTimeout(function () {
-      if (verdict === "like" && p.likesYou) openMatchOverlay(p);
-      renderDeck();
-      updateBadges();
-    }, 220);
+    // idempotent server-side: safe to retry with the same client_id
+    apiCall("POST", "/swipes", { target_id: p.id, direction: direction, client_id: uuid() })
+      .then(function (data) {
+        if (data.match) {
+          matchesCache.unshift(data.match);
+          openMatchOverlay(data.match);
+          updateBadges();
+        }
+      }).catch(function (err) { toast(friendlyError(err)); });
+    setTimeout(renderDeck, 220);
   }
 
   $("btn-like").addEventListener("click", function () { commitSwipe("like"); });
@@ -1849,35 +2463,42 @@
 
   /* ---------------- matching ---------------- */
 
-  function openMatchOverlay(p) {
-    state.matches.push({ id: p.id, at: Date.now(), unread: false, lastAt: 0 });
-    save();
-    setAvatar($("mo-me"), state.user.name, state.user.hues);
-    setAvatar($("mo-them"), p.name, p.hues);
-    $("mo-text").textContent = "You and " + p.name + " liked each other. Someone has to go first…";
+  function openMatchOverlay(match) {
+    setAvatar($("mo-me"), me.profile.name, huesOf(me.profile.hue_index));
+    setAvatar($("mo-them"), match.user.name, huesOf(match.user.hue_index));
+    $("mo-text").textContent = "You and " + match.user.name + " liked each other. Someone has to go first…";
     $("match-overlay").classList.add("open");
-    $("match-overlay").dataset.id = p.id;
-    updateBadges();
+    $("match-overlay").dataset.matchId = match.id;
   }
   $("btn-keep-swiping").addEventListener("click", function () {
     $("match-overlay").classList.remove("open");
   });
   $("btn-say-hi").addEventListener("click", function () {
-    var id = $("match-overlay").dataset.id;
+    var id = $("match-overlay").dataset.matchId;
     $("match-overlay").classList.remove("open");
     openChat(id);
   });
 
   function updateBadges() {
-    var unread = state.matches.some(function (m) { return m.unread && !state.blocked[m.id]; });
+    var unread = matchesCache.some(function (m) { return m.unread_count > 0; });
     $("dot-matches").classList.toggle("show", unread);
-    var rejected = !!state.user && (state.user.photos || []).some(function (ph) {
-      return ph.status === "rejected";
-    });
+    var rejected = !!me && me.photos.some(function (p) { return p.moderation_status === "rejected"; });
     $("dot-profile").classList.toggle("show", rejected);
   }
 
   /* ---------------- matches list ---------------- */
+
+  function refreshMatches() {
+    return apiCall("GET", "/matches").then(function (data) {
+      matchesCache = data.matches;
+      updateBadges();
+      return matchesCache;
+    });
+  }
+  function matchById(id) {
+    for (var i = 0; i < matchesCache.length; i++) if (matchesCache[i].id === id) return matchesCache[i];
+    return null;
+  }
 
   function renderMatches() {
     var listBox = $("match-list");
@@ -1885,23 +2506,21 @@
     listBox.textContent = "";
     strip.textContent = "";
 
-    var visible = state.matches.filter(function (m) { return !state.blocked[m.id]; });
-    var fresh = visible.filter(function (m) { return !(state.convos[m.id] || []).length; });
-    var talked = visible.filter(function (m) { return (state.convos[m.id] || []).length; });
+    var fresh = matchesCache.filter(function (m) { return !m.last_message; });
+    var talked = matchesCache.filter(function (m) { return m.last_message; });
     $("label-new-matches").hidden = !fresh.length;
 
     fresh.forEach(function (m) {
-      var p = personById(m.id);
       var b = el("button", "new-face");
       var av = el("div", "avatar");
-      setAvatar(av, p.name, p.hues);
+      setAvatar(av, m.user.name, huesOf(m.user.hue_index));
       b.appendChild(av);
-      b.appendChild(el("span", null, p.name));
+      b.appendChild(el("span", null, m.user.name));
       b.addEventListener("click", function () { openChat(m.id); });
       strip.appendChild(b);
     });
 
-    if (!visible.length) {
+    if (!matchesCache.length) {
       var note = el("div", "empty-note");
       note.appendChild(el("h3", null, "No matches yet"));
       note.appendChild(el("p", null, "Head to Discover and start swiping — someone out there already likes you."));
@@ -1916,31 +2535,27 @@
       return;
     }
 
-    talked.sort(function (a, b) { return b.lastAt - a.lastAt; });
     talked.forEach(function (m) {
-      var p = personById(m.id);
-      var convo = state.convos[m.id];
-      var last = convo[convo.length - 1];
       var row = el("div", "match-row");
       row.setAttribute("role", "button");
       row.tabIndex = 0;
       var av = el("div", "avatar");
-      setAvatar(av, p.name, p.hues);
+      setAvatar(av, m.user.name, huesOf(m.user.hue_index));
       row.appendChild(av);
       var col = el("div", "col");
-      col.appendChild(el("p", "name", p.name));
-      col.appendChild(el("p", "preview", (last.from === "me" ? "You: " : "") + last.text));
+      col.appendChild(el("p", "name", m.user.name));
+      var mine = m.last_message.sender_id === me.id;
+      col.appendChild(el("p", "preview", (mine ? "You: " : "") + m.last_message.body));
       row.appendChild(col);
-      row.appendChild(el("span", "when", timeLabel(last.at)));
-      var dot = el("span", "unread" + (m.unread ? " show" : ""));
-      dot.classList.add("unread");
-      if (m.unread) dot.classList.add("show");
+      row.appendChild(el("span", "when", timeLabel(m.last_message.created_at)));
+      var dot = el("span", "unread");
+      if (m.unread_count > 0) dot.classList.add("show");
       row.appendChild(dot);
       var menu = el("button", "row-menu");
       menu.type = "button";
-      menu.setAttribute("aria-label", "Report or block " + p.name);
+      menu.setAttribute("aria-label", "Report or block " + m.user.name);
       menu.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
-      menu.addEventListener("click", function (ev) { ev.stopPropagation(); openSafety(m.id); });
+      menu.addEventListener("click", function (ev) { ev.stopPropagation(); openSafety(m.user.id, m.id); });
       row.appendChild(menu);
       row.addEventListener("click", function () { openChat(m.id); });
       row.addEventListener("keydown", function (ev) {
@@ -1952,42 +2567,47 @@
 
   /* ---------------- chat ---------------- */
 
-  var replyTimer = null;
-
-  function matchFor(id) {
-    for (var i = 0; i < state.matches.length; i++) if (state.matches[i].id === id) return state.matches[i];
-    return null;
-  }
-
-  function openChat(id) {
-    var p = personById(id);
-    state.activeChat = id;
-    var m = matchFor(id);
-    if (m) { m.unread = false; }
-    save();
-    updateBadges();
-    setAvatar($("chat-avatar"), p.name, p.hues);
-    $("chat-name").textContent = p.name + ", " + p.age;
-    $("chat-sub").textContent = p.job + " · " + p.dist + " km away";
+  function openChat(matchId) {
+    var m = matchById(matchId);
+    if (!m) { refreshMatches().then(function () { if (matchById(matchId)) openChat(matchId); }); return; }
+    activeMatchId = matchId;
+    setAvatar($("chat-avatar"), m.user.name, huesOf(m.user.hue_index));
+    $("chat-name").textContent = m.user.name + ", " + m.user.age;
+    $("chat-sub").textContent = m.user.job + " · " + m.user.distance_km + " km away";
     $("chat-input").value = "";
     $("chat-send").disabled = true;
-    renderChat();
-    showScreen("screen-chat");
+    apiCall("GET", "/matches/" + matchId + "/messages?limit=50").then(function (data) {
+      chatMsgs = data.messages.slice().reverse(); // render oldest-first
+      renderChat();
+      showScreen("screen-chat");
+      if (chatMsgs.length) {
+        apiCall("POST", "/matches/" + matchId + "/read",
+          { last_message_id: chatMsgs[chatMsgs.length - 1].id }).catch(function () {});
+      }
+      m.unread_count = 0;
+      updateBadges();
+    }).catch(function (err) { toast(friendlyError(err)); });
   }
 
   function renderChat() {
     var log = $("chat-log");
+    var m = matchById(activeMatchId);
     log.textContent = "";
-    var p = personById(state.activeChat);
-    var convo = state.convos[state.activeChat] || [];
-    if (!convo.length) {
-      log.appendChild(el("div", "chat-day", "You matched with " + p.name + " — say hello!"));
+    if (!m) return;
+    if (!chatMsgs.length) {
+      log.appendChild(el("div", "chat-day", "You matched with " + m.user.name + " — say hello!"));
     } else {
-      log.appendChild(el("div", "chat-day", "Matched with " + p.name));
+      log.appendChild(el("div", "chat-day", "Matched with " + m.user.name));
     }
-    convo.forEach(function (msg) {
-      var b = el("div", "bubble " + (msg.from === "me" ? "me" : "them"), msg.text);
-      b.appendChild(el("span", "t", clock(msg.at)));
+    var lastReadOwn = null;
+    chatMsgs.forEach(function (msg) {
+      if (msg.sender_id === me.id && msg.seq <= m.their_last_read_seq) lastReadOwn = msg;
+    });
+    chatMsgs.forEach(function (msg) {
+      var mine = msg.sender_id === me.id;
+      var b = el("div", "bubble " + (mine ? "me" : "them"), msg.body);
+      b.appendChild(el("span", "t", clock(msg.created_at)));
+      if (lastReadOwn && msg.id === lastReadOwn.id) b.appendChild(el("span", "receipt", "Read"));
       log.appendChild(b);
     });
     log.scrollTop = log.scrollHeight;
@@ -2000,46 +2620,94 @@
   $("form-chat").addEventListener("submit", function (ev) {
     ev.preventDefault();
     var text = $("chat-input").value.trim();
-    if (!text || !state.activeChat) return;
-    var id = state.activeChat;
-    var p = personById(id);
-    if (!state.convos[id]) state.convos[id] = [];
-    state.convos[id].push({ from: "me", text: text, at: Date.now() });
-    var m = matchFor(id);
-    if (m) m.lastAt = Date.now();
+    if (!text || !activeMatchId) return;
     $("chat-input").value = "";
     $("chat-send").disabled = true;
-    save();
-    renderChat();
-
-    // canned auto-reply so the prototype feels alive
-    clearTimeout(replyTimer);
-    var typing = el("div", "bubble them typing", p.name + " is typing…");
-    $("chat-log").appendChild(typing);
-    $("chat-log").scrollTop = $("chat-log").scrollHeight;
-    var used = state.convos[id].filter(function (x) { return x.from === "them"; }).length;
-    var line = p.replies[used % p.replies.length];
-    replyTimer = setTimeout(function () {
-      state.convos[id].push({ from: "them", text: line, at: Date.now() });
-      var mm = matchFor(id);
-      if (mm) {
-        mm.lastAt = Date.now();
-        if (state.activeChat !== id) mm.unread = true;
+    // WS path: message.send; the echo comes back as message.new with our client_id
+    var cid = uuid();
+    try {
+      handleSendMessage(db.users[session.user_id], activeMatchId, text, cid);
+    } catch (e) {
+      if (e.error && e.error.code === "match_closed") { toast("This conversation has ended."); return; }
+      toast("Couldn't send — try again.");
+      return;
+    }
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(function () {
+      if ($("screen-chat").classList.contains("active") && activeMatchId) {
+        var log = $("chat-log");
+        if (!log.querySelector(".bubble.typing")) {
+          var m = matchById(activeMatchId);
+          log.appendChild(el("div", "bubble them typing", (m ? m.user.name : "") + " is typing…"));
+          log.scrollTop = log.scrollHeight;
+        }
       }
-      save();
-      if (state.activeChat === id && $("screen-chat").classList.contains("active")) renderChat();
-      updateBadges();
-    }, 1400 + Math.random() * 900);
+    }, 500);
   });
 
-  /* ---------------- filters ---------------- */
+  /* ---------------- WS frame handlers ---------------- */
+
+  onFrame("message.new", function (data) {
+    var m = matchById(data.match_id);
+    if (m) {
+      m.last_message = data;
+      if (data.sender_id !== me.id) {
+        if (data.match_id === activeMatchId && $("screen-chat").classList.contains("active")) {
+          apiCall("POST", "/matches/" + data.match_id + "/read", { last_message_id: data.id }).catch(function () {});
+          m.unread_count = 0;
+        } else {
+          m.unread_count = (m.unread_count || 0) + 1;
+        }
+      }
+    }
+    if (data.match_id === activeMatchId && $("screen-chat").classList.contains("active")) {
+      var typing = $("chat-log").querySelector(".bubble.typing");
+      if (typing && data.sender_id !== me.id) typing.remove();
+      // reconcile by client_id: our own echo replaces the optimistic state
+      chatMsgs.push(data);
+      renderChat();
+    }
+    if ($("view-matches").classList.contains("active")) renderMatches();
+    updateBadges();
+  });
+
+  onFrame("message.read", function (data) {
+    var m = matchById(data.match_id);
+    if (!m || data.reader_id === me.id) return;
+    var target = null;
+    chatMsgs.forEach(function (x) { if (x.id === data.last_message_id) target = x; });
+    if (target) m.their_last_read_seq = Math.max(m.their_last_read_seq || 0, target.seq);
+    else m.their_last_read_seq = (m.their_last_read_seq || 0) + 1000000; // read past what we have
+    if (data.match_id === activeMatchId && $("screen-chat").classList.contains("active")) renderChat();
+  });
+
+  onFrame("match.new", function (data) {
+    if (!matchById(data.id)) matchesCache.unshift(data);
+    updateBadges();
+  });
+
+  onFrame("match.closed", function (data) {
+    matchesCache = matchesCache.filter(function (m) { return m.id !== data.match_id; });
+    if (activeMatchId === data.match_id) {
+      activeMatchId = null;
+      showScreen("screen-app");
+      showTab("matches");
+      toast("This conversation has ended.");
+    } else if ($("view-matches").classList.contains("active")) {
+      renderMatches();
+    }
+    updateBadges();
+  });
+
+  /* ---------------- filters (preferences) ---------------- */
 
   function openFilters() {
-    var f = state.filters;
-    $("f-age-min").value = f.ageMin; $("out-age-min").textContent = f.ageMin;
-    $("f-age-max").value = f.ageMax; $("out-age-max").textContent = f.ageMax;
-    $("f-dist").value = f.dist; $("out-dist").textContent = f.dist + " km";
-    buildChips("f-interests", f.interests, 0);
+    var f = me.preferences;
+    $("f-age-min").value = f.min_age; $("out-age-min").textContent = f.min_age;
+    $("f-age-max").value = f.max_age; $("out-age-max").textContent = f.max_age;
+    $("f-dist").value = f.max_distance_km; $("out-dist").textContent = f.max_distance_km + " km";
+    buildChips("f-genders", GENDERS, f.genders.length ? f.genders : GENDERS.map(function (g) { return g.code; }), 0);
+    buildChips("f-interests", INTERESTS, f.interests || [], 0);
     $("filter-backdrop").classList.add("open");
   }
   $("btn-filters").addEventListener("click", openFilters);
@@ -2060,168 +2728,100 @@
     $("out-dist").textContent = $("f-dist").value + " km";
   });
   $("btn-apply-filters").addEventListener("click", function () {
-    state.filters = {
-      ageMin: parseInt($("f-age-min").value, 10),
-      ageMax: parseInt($("f-age-max").value, 10),
-      dist: parseInt($("f-dist").value, 10),
+    var genders = chipValues("f-genders");
+    apiCall("PUT", "/me/preferences", {
+      min_age: parseInt($("f-age-min").value, 10),
+      max_age: parseInt($("f-age-max").value, 10),
+      max_distance_km: parseInt($("f-dist").value, 10),
+      genders: genders.length === GENDERS.length ? [] : genders,
       interests: chipValues("f-interests")
-    };
-    save();
-    rebuildDeck();
-    $("filter-backdrop").classList.remove("open");
-    renderDeck();
-    toast(state.deck.length ? state.deck.length + " people match your filters" : "No one matches — try widening");
+    }).then(function (prefs) {
+      me.preferences = prefs;
+      return refreshFeed();
+    }).then(function (count) {
+      $("filter-backdrop").classList.remove("open");
+      renderDeck();
+      toast(count ? count + " people match your filters" : "No one matches — try widening");
+    }).catch(function (err) { toast(friendlyError(err)); });
   });
   $("btn-reset-filters").addEventListener("click", function () {
-    state.filters = { ageMin: 21, ageMax: 40, dist: 25, interests: [] };
-    save();
-    openFilters();
-  });
-
-  /* ---------------- safety: report & block ---------------- */
-
-  var REPORT_REASONS = ["Fake profile or spam", "Inappropriate messages",
-    "Inappropriate photos", "Underage or minor", "Made me feel unsafe", "Other"];
-
-  var safetyTarget = null;
-
-  function showSafetyView(view) {
-    ["safety-menu", "safety-reasons", "safety-report-done", "safety-block-confirm"]
-      .forEach(function (id) { $(id).hidden = id !== "safety-" + view; });
-  }
-
-  function openSafety(id) {
-    safetyTarget = id;
-    var p = personById(id);
-    $("safety-title").textContent = p.name;
-    $("safety-report-label").textContent = "Report " + p.name;
-    $("safety-block-label").textContent = "Block " + p.name;
-    $("safety-reasons-note").textContent = "Why are you reporting " + p.name +
-      "? This is confidential — they won't be notified.";
-    $("safety-block-note").textContent = "Block " + p.name +
-      "? You won't see each other anywhere in Maktub. This is immediate and can't be undone.";
-    showSafetyView("menu");
-    $("safety-backdrop").classList.add("open");
-  }
-
-  function closeSafety() {
-    $("safety-backdrop").classList.remove("open");
-    safetyTarget = null;
-  }
-
-  function blockUser(id) {
-    var p = personById(id);
-    state.blocked[id] = true;
-    state.deck = state.deck.filter(function (x) { return x !== id; });
-    save();
-    closeSafety();
-    if (state.activeChat === id) {
-      state.activeChat = null;
-      showScreen("screen-app");
-      showTab("matches");
-    } else {
-      if ($("view-discover").classList.contains("active")) renderDeck();
-      if ($("view-matches").classList.contains("active")) renderMatches();
-    }
-    updateBadges();
-    toast(p.name + " blocked");
-  }
-
-  $("btn-report-open").addEventListener("click", function () {
-    var box = $("reason-list");
-    box.textContent = "";
-    REPORT_REASONS.forEach(function (reason) {
-      var b = el("button", "safety-opt", reason);
-      b.type = "button";
-      b.addEventListener("click", function () {
-        state.reports.push({ id: safetyTarget, reason: reason, at: Date.now() });
-        save();
-        showSafetyView("report-done");
-      });
-      box.appendChild(b);
+    apiCall("PUT", "/me/preferences", {
+      min_age: 21, max_age: 40, max_distance_km: 25, genders: [], interests: []
+    }).then(function (prefs) {
+      me.preferences = prefs;
+      openFilters();
     });
-    showSafetyView("reasons");
-  });
-  $("btn-block-open").addEventListener("click", function () { showSafetyView("block-confirm"); });
-  $("btn-block-confirm").addEventListener("click", function () { blockUser(safetyTarget); });
-  $("btn-report-block").addEventListener("click", function () { blockUser(safetyTarget); });
-  $("btn-safety-done").addEventListener("click", closeSafety);
-  $("btn-safety-cancel").addEventListener("click", function () { showSafetyView("menu"); });
-  $("safety-backdrop").addEventListener("click", function (ev) {
-    if (ev.target === $("safety-backdrop")) closeSafety();
-  });
-  $("btn-chat-safety").addEventListener("click", function () {
-    if (state.activeChat) openSafety(state.activeChat);
   });
 
   /* ---------------- profile photos & moderation ---------------- */
 
-  function ensurePhotos() {
-    if (state.user && !state.user.photos) state.user.photos = [];
-    return state.user ? state.user.photos : [];
-  }
-
-  function scheduleModeration(photoId) {
-    setTimeout(function () {
-      if (!state.user) return;
-      var photos = ensurePhotos();
-      var photo = null;
-      for (var i = 0; i < photos.length; i++) if (photos[i].id === photoId) photo = photos[i];
-      if (!photo || photo.status !== "pending") return;
-      if (photo.kind === "lowlight") {
-        photo.status = "rejected";
-        photo.reason = "Too dark to verify";
-        toast("A photo was rejected in review");
-      } else {
-        photo.status = "approved";
-        toast("Photo approved");
-      }
-      save();
-      updateBadges();
-      if ($("view-profile").classList.contains("active")) renderPhotos();
-    }, MODERATION_MS);
+  function pollModeration() {
+    clearInterval(pollTimer);
+    pollTimer = setInterval(function () {
+      if (!session || !me) { clearInterval(pollTimer); return; }
+      var pendingBefore = me.photos.filter(function (p) { return p.moderation_status === "pending"; })
+        .map(function (p) { return p.id; });
+      if (!pendingBefore.length) { clearInterval(pollTimer); return; }
+      apiCall("GET", "/me").then(function (data) {
+        var prev = me; me = data;
+        data.photos.forEach(function (p) {
+          if (pendingBefore.indexOf(p.id) >= 0 && p.moderation_status !== "pending") {
+            toast(p.moderation_status === "approved" ? "Photo approved" : "A photo was rejected in review");
+          }
+        });
+        void prev;
+        if ($("view-profile").classList.contains("active")) renderPhotos();
+        updateBadges();
+      }).catch(function () {});
+    }, 700);
   }
 
   function addPhoto(kind) {
-    var photos = ensurePhotos();
-    if (photos.length >= 6) { toast("Up to 6 photos"); return; }
-    var photo = { id: "ph" + Date.now() + Math.floor(Math.random() * 1000), kind: kind, status: "pending", at: Date.now() };
-    photos.push(photo);
-    save();
-    $("photo-backdrop").classList.remove("open");
-    renderPhotos();
-    scheduleModeration(photo.id);
+    if (me.photos.length >= 6) { toast("Up to 6 photos"); return; }
+    // contract flow: presign -> binary PUT -> confirm
+    apiCall("POST", "/me/photos/presign", { content_type: "image/jpeg" })
+      .then(function (data) {
+        return mockS3Put(data.upload_url, kind).then(function () {
+          return apiCall("POST", "/me/photos/confirm", { key: data.key });
+        });
+      })
+      .then(function () { return apiCall("GET", "/me"); })
+      .then(function (data) {
+        me = data;
+        $("photo-backdrop").classList.remove("open");
+        renderPhotos();
+        pollModeration();
+      }).catch(function (err) { toast(friendlyError(err)); });
   }
 
-  function movePhoto(idx, delta) {
-    var photos = ensurePhotos();
+  function reorderPhotos(idx, delta) {
+    var ids = me.photos.map(function (p) { return p.id; });
     var j = idx + delta;
-    if (j < 0 || j >= photos.length) return;
-    var tmp = photos[idx]; photos[idx] = photos[j]; photos[j] = tmp;
-    save();
-    renderPhotos();
+    if (j < 0 || j >= ids.length) return;
+    var tmp = ids[idx]; ids[idx] = ids[j]; ids[j] = tmp;
+    apiCall("PATCH", "/me/photos/order", { ordered_ids: ids })
+      .then(function () { return apiCall("GET", "/me"); })
+      .then(function (data) { me = data; renderPhotos(); });
   }
-
-  function removePhoto(idx) {
-    ensurePhotos().splice(idx, 1);
-    save();
-    updateBadges();
-    renderPhotos();
+  function removePhoto(id) {
+    apiCall("DELETE", "/me/photos/" + id)
+      .then(function () { return apiCall("GET", "/me"); })
+      .then(function (data) { me = data; renderPhotos(); updateBadges(); });
   }
 
   function renderPhotos() {
     var grid = $("photo-grid");
     grid.textContent = "";
-    var photos = ensurePhotos();
+    var photos = me.photos;
     photos.forEach(function (photo, idx) {
       var slot = el("div", "photo-slot");
-      slot.dataset.status = photo.status;
-      slot.dataset.kind = photo.kind;
+      slot.dataset.status = photo.moderation_status;
+      slot.dataset.kind = photo.urls.card;
       var img = el("div", "ph-img");
-      img.style.background = PHOTO_SCENES[photo.kind].bg;
+      img.style.background = PHOTO_SCENES[photo.urls.card].bg;
       slot.appendChild(img);
-      if (photo.status === "pending") slot.appendChild(el("span", "ph-chip", "In review"));
-      else if (photo.status === "rejected") slot.appendChild(el("span", "ph-chip", "Rejected — " + (photo.reason || "not allowed")));
+      if (photo.moderation_status === "pending") slot.appendChild(el("span", "ph-chip", "In review"));
+      else if (photo.moderation_status === "rejected") slot.appendChild(el("span", "ph-chip", "Rejected — " + (photo.reason || "not allowed")));
       else if (idx === 0) slot.appendChild(el("span", "ph-chip", "Main"));
 
       var controls = el("div", "ph-controls");
@@ -2230,18 +2830,18 @@
       left.setAttribute("aria-label", "Move photo earlier");
       left.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
       left.disabled = idx === 0;
-      left.addEventListener("click", function () { movePhoto(idx, -1); });
+      left.addEventListener("click", function () { reorderPhotos(idx, -1); });
       var right = el("button", "ph-btn ph-right");
       right.type = "button";
       right.setAttribute("aria-label", "Move photo later");
       right.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
       right.disabled = idx === photos.length - 1;
-      right.addEventListener("click", function () { movePhoto(idx, 1); });
+      right.addEventListener("click", function () { reorderPhotos(idx, 1); });
       var rm = el("button", "ph-btn ph-remove");
       rm.type = "button";
       rm.setAttribute("aria-label", "Remove photo");
       rm.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-      rm.addEventListener("click", function () { removePhoto(idx); });
+      rm.addEventListener("click", function () { removePhoto(photo.id); });
       controls.appendChild(left);
       controls.appendChild(rm);
       controls.appendChild(right);
@@ -2278,11 +2878,94 @@
     if (ev.target === $("photo-backdrop")) $("photo-backdrop").classList.remove("open");
   });
 
-  function resumeModeration() {
-    ensurePhotos().forEach(function (photo) {
-      if (photo.status === "pending") scheduleModeration(photo.id);
-    });
+  /* ---------------- safety: report, block, unmatch ---------------- */
+
+  function showSafetyView(view) {
+    ["safety-menu", "safety-reasons", "safety-report-done", "safety-unmatch-confirm", "safety-block-confirm"]
+      .forEach(function (id) { $(id).hidden = id !== "safety-" + view; });
   }
+
+  function userNameById(userId) {
+    var m = null;
+    matchesCache.forEach(function (x) { if (x.user.id === userId) m = x.user.name; });
+    if (m) return m;
+    var found = null;
+    deck.forEach(function (c) { if (c.id === userId) found = c.name; });
+    return found || "them";
+  }
+
+  function openSafety(userId, matchId) {
+    safetyTarget = { userId: userId, matchId: matchId || null };
+    var name = userNameById(userId);
+    $("safety-title").textContent = name;
+    $("safety-report-label").textContent = "Report " + name;
+    $("safety-block-label").textContent = "Block " + name;
+    $("safety-unmatch-label").textContent = "Unmatch " + name;
+    $("safety-unmatch-wrap").hidden = !matchId;
+    $("safety-reasons-note").textContent = "Why are you reporting " + name +
+      "? This is confidential — they won't be notified.";
+    $("safety-block-note").textContent = "Block " + name +
+      "? You won't see each other anywhere in Maktub. This is immediate and can't be undone.";
+    $("safety-unmatch-note").textContent = "Unmatch " + name +
+      "? The conversation closes for both of you.";
+    showSafetyView("menu");
+    $("safety-backdrop").classList.add("open");
+  }
+  function closeSafety() {
+    $("safety-backdrop").classList.remove("open");
+    safetyTarget = null;
+  }
+
+  function blockUser(userId) {
+    var name = userNameById(userId);
+    apiCall("POST", "/blocks", { user_id: userId }).then(function () {
+      closeSafety();
+      deck = deck.filter(function (c) { return c.id !== userId; });
+      // match.closed frames handle open threads; refresh local views now
+      matchesCache = matchesCache.filter(function (m) { return m.user.id !== userId; });
+      if ($("view-discover").classList.contains("active")) renderDeck();
+      if ($("view-matches").classList.contains("active")) renderMatches();
+      updateBadges();
+      toast(name + " blocked");
+    }).catch(function (err) { toast(friendlyError(err)); });
+  }
+
+  $("btn-report-open").addEventListener("click", function () {
+    var box = $("reason-list");
+    box.textContent = "";
+    REPORT_REASONS.forEach(function (r) {
+      var b = el("button", "safety-opt", r.label);
+      b.type = "button";
+      b.addEventListener("click", function () {
+        apiCall("POST", "/reports", { user_id: safetyTarget.userId, reason: r.code })
+          .then(function () { showSafetyView("report-done"); })
+          .catch(function (err) { toast(friendlyError(err)); });
+      });
+      box.appendChild(b);
+    });
+    showSafetyView("reasons");
+  });
+  $("btn-block-open").addEventListener("click", function () { showSafetyView("block-confirm"); });
+  $("btn-block-confirm").addEventListener("click", function () { blockUser(safetyTarget.userId); });
+  $("btn-report-block").addEventListener("click", function () { blockUser(safetyTarget.userId); });
+  $("btn-safety-done").addEventListener("click", closeSafety);
+  $("btn-safety-cancel").addEventListener("click", function () { showSafetyView("menu"); });
+  $("btn-unmatch-open").addEventListener("click", function () { showSafetyView("unmatch-confirm"); });
+  $("btn-unmatch-cancel").addEventListener("click", function () { showSafetyView("menu"); });
+  $("btn-unmatch-confirm").addEventListener("click", function () {
+    var target = safetyTarget;
+    apiCall("DELETE", "/matches/" + target.matchId).then(function () {
+      closeSafety();
+      // match.closed frame does the rest (thread exit, list refresh)
+    }).catch(function (err) { toast(friendlyError(err)); });
+  });
+  $("safety-backdrop").addEventListener("click", function (ev) {
+    if (ev.target === $("safety-backdrop")) closeSafety();
+  });
+  $("btn-chat-safety").addEventListener("click", function () {
+    var m = matchById(activeMatchId);
+    if (m) openSafety(m.user.id, m.id);
+  });
 
   /* ---------------- settings & compliance ---------------- */
 
@@ -2332,7 +3015,7 @@
   });
 
   $("btn-open-settings").addEventListener("click", function () {
-    $("toggle-notif").checked = !!state.settings.notifications;
+    $("toggle-notif").checked = !!session.settings.notifications;
     showScreen("screen-settings");
   });
   $("btn-settings-back").addEventListener("click", function () {
@@ -2341,20 +3024,30 @@
   });
   $("btn-set-prefs").addEventListener("click", openFilters);
   $("toggle-notif").addEventListener("change", function () {
-    state.settings.notifications = $("toggle-notif").checked;
-    save();
-    toast(state.settings.notifications ? "Notifications on" : "Notifications off");
+    session.settings.notifications = $("toggle-notif").checked;
+    saveSession();
+    if (session.settings.notifications) {
+      apiCall("POST", "/devices", { push_token: "mock-" + session.user_id, platform: "ios" }).catch(function () {});
+    }
+    toast(session.settings.notifications ? "Notifications on" : "Notifications off");
   });
 
   $("btn-export").addEventListener("click", function () {
-    var data = {
-      exported_at: new Date().toISOString(),
-      user: state.user, seen: state.seen, matches: state.matches,
-      convos: state.convos, blocked: state.blocked, reports: state.reports,
-      settings: state.settings, filters: state.filters
-    };
-    $("export-json").value = JSON.stringify(data, null, 2);
-    $("export-backdrop").classList.add("open");
+    // contract: POST /me/export -> 202; prototype also shows the data immediately
+    apiCall("POST", "/me/export").then(function () {
+      var messages = {};
+      Object.keys(db.matches).forEach(function (id) {
+        var m = db.matches[id];
+        if (m.users.indexOf(session.user_id) < 0) return;
+        messages[id] = m.msgs.map(function (x) { return serializeMessage(x, id); });
+      });
+      var data = {
+        exported_at: nowIso(), export_request: "accepted (202)",
+        me: me, matches: matchesCache, messages: messages, settings: session.settings
+      };
+      $("export-json").value = JSON.stringify(data, null, 2);
+      $("export-backdrop").classList.add("open");
+    }).catch(function (err) { toast(friendlyError(err)); });
   });
   $("btn-copy-export").addEventListener("click", function () {
     var text = $("export-json").value;
@@ -2381,45 +3074,92 @@
     if (ev.target === $("delete-backdrop")) $("delete-backdrop").classList.remove("open");
   });
   $("btn-delete-confirm").addEventListener("click", function () {
-    $("delete-backdrop").classList.remove("open");
-    resetSession();
-    toast("Account deleted");
+    apiCall("DELETE", "/me").then(function () {
+      $("delete-backdrop").classList.remove("open");
+      resetSession();
+      toast("Account deleted");
+    }).catch(function (err) { toast(friendlyError(err)); });
   });
 
   /* ---------------- profile ---------------- */
 
   function renderProfile() {
-    var u = state.user;
     renderPhotos();
-    setAvatar($("me-avatar"), u.name, u.hues);
-    $("me-name").textContent = u.name + ", " + u.age;
-    $("me-sub").textContent = u.email || "Prototype account";
-    $("pf-bio").value = u.bio || "";
-    buildChips("pf-interests", u.interests || [], 6);
-    var idx = 0;
-    HUES.forEach(function (h, i) { if (u.hues && h[0] === u.hues[0] && h[1] === u.hues[1]) idx = i; });
-    buildSwatches("pf-swatches", idx);
+    setAvatar($("me-avatar"), me.profile.name, huesOf(me.profile.hue_index));
+    $("me-name").textContent = me.profile.name + ", " + ageOf(me.profile.birthdate);
+    $("me-sub").textContent = me.phone || "Prototype account";
+    $("pf-bio").value = me.profile.bio || "";
+    buildChips("pf-interests", INTERESTS, me.profile.interests || [], 6);
+    buildSwatches("pf-swatches", me.profile.hue_index || 0);
   }
   $("form-profile").addEventListener("submit", function (ev) {
     ev.preventDefault();
     var picked = chipValues("pf-interests");
     if (picked.length < 3) { toast("Keep at least 3 interests"); return; }
-    state.user.bio = $("pf-bio").value.trim();
-    state.user.interests = picked;
-    state.user.hues = swatchValue("pf-swatches");
-    save();
-    renderProfile();
-    toast("Profile saved");
+    apiCall("PATCH", "/me/profile", {
+      bio: $("pf-bio").value.trim(), interests: picked, hue_index: swatchIndex("pf-swatches")
+    }).then(function () { return apiCall("GET", "/me"); })
+      .then(function (data) {
+        me = data;
+        renderProfile();
+        toast("Profile saved");
+      }).catch(function (err) { toast(friendlyError(err)); });
   });
+
+  /* ---------------- test / debug hooks ---------------- */
+
+  window.__maktub = {
+    snapshot: function () {
+      if (!session || !session.user_id || !db.users[session.user_id]) return null;
+      var uid = session.user_id;
+      var u = db.users[uid];
+      var seen = {};
+      Object.keys(db.swipes).forEach(function (k) {
+        if (k.indexOf(uid + "|") === 0) seen[k.slice(uid.length + 1)] = db.swipes[k].direction;
+      });
+      var matches = [];
+      Object.keys(db.matches).forEach(function (id) {
+        var m = db.matches[id];
+        if (m.closed || m.users.indexOf(uid) < 0) return;
+        matches.push({ id: partnerOf(m, uid), matchId: m.id, unread: (m.unread && m.unread[uid]) || 0 });
+      });
+      var blocked = {};
+      Object.keys(db.blocks).forEach(function (k) {
+        if (k.indexOf(uid + "|") === 0) blocked[k.slice(uid.length + 1)] = true;
+      });
+      return {
+        user: { name: u.name, phone: u.phone, bio: u.bio,
+          interests: (u.interests || []).slice(), hues: huesOf(u.hue_index),
+          photos: (u.photos || []).map(function (p) { return { kind: p.kind, status: p.status }; }) },
+        seen: seen, matches: matches, blocked: blocked,
+        reports: db.reports.filter(function (r) { return r.reporter_id === uid; })
+          .map(function (r) { return { id: r.user_id, reason: r.reason }; }),
+        settings: session.settings
+      };
+    },
+    expireAccessToken: function () {
+      if (session && db.access[session.access]) db.access[session.access].expires_at = Date.now() - 1000;
+    },
+    accessToken: function () { return session && session.access; },
+    rest: function (method, path, body) { return apiCall(method, path, body); },
+    rawRest: function (method, path, body, token) {
+      return serverFetch(method, path, body, token === undefined ? (session && session.access) : token)
+        .then(function (res) { return { status: res.status, data: res.data }; },
+          function (err) { return { status: err.status, error: { code: err.code, message: err.message, retry_after_s: err.retry_after_s } }; });
+    }
+  };
 
   /* ---------------- boot ---------------- */
 
-  if (load()) {
-    rebuildDeck();
-    showScreen("screen-app");
-    showTab("discover");
-    updateBadges();
-    resumeModeration();
+  loadDb();
+  loadSession();
+  if (session && session.access) {
+    apiCall("GET", "/me").then(function (data) {
+      me = data;
+      if (me.onboarding_state === "complete") return enterApp();
+      prepSetup();
+      showScreen("screen-setup");
+    }).catch(function () { resetSession(); });
   }
 })();
 </script>

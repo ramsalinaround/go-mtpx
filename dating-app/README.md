@@ -6,18 +6,20 @@ inside a phone-style frame).
 
 It covers the full V1 flow with mock data only — nothing leaves your browser:
 
-- **Auth (mock)** — sign up (name, age, email, password, preferences) with a
-  profile-setup step (bio, interests, profile color), or log in with any
-  email/password.
+- **Auth (phone OTP)** — E.164 phone number, a 6-digit code (shown on screen —
+  the prototype has no SMS; it's always `123456`), then profile setup with
+  birthdate (18+ enforced server-side), gender, "show me", bio, interests, and
+  profile color. Sessions persist with rotating tokens.
 - **Discover** — a swipeable card deck (drag, or use the like/pass buttons).
   Some profiles already "like you", so liking them triggers the
   *It's a match!* overlay.
-- **Filters** — age range, distance, and shared-interest filters that rebuild
-  the deck.
+- **Filters** — age range, distance, genders shown, and shared-interest
+  filters that rebuild the feed.
 - **Matches** — new matches strip plus a message list with previews and unread
   dots. Two conversations come pre-seeded.
-- **Chat** — per-match messaging with canned auto-replies (and a typing
-  indicator) so the prototype feels alive.
+- **Chat** — per-match messaging over emulated WebSocket frames, with typing
+  indicator, auto-replies, read receipts, and unmatch. The whole app talks to
+  an in-page mock backend implementing `docs/spec/02-api-contract.md`.
 - **Profile** — edit your bio, interests, and profile color; log out to reset.
 - **Photos** — up to 6 sample photos with arrow reorder; new photos sit "In
   review" (simulated moderation) and others only ever see approved ones. A
@@ -49,12 +51,13 @@ feature can't silently break an existing one:
 
 | Script | Feature it guards |
 |--------|-------------------|
-| `test-auth.js` | Signup validation (incl. 18+ hard stop), login, session persistence, logout |
+| `test-api.js` | Contract conformance: error envelope, OTP throttle, token rotation, `underage`, idempotent swipes, pagination, unmatch, deletion |
+| `test-auth.js` | OTP signup/login, resend cooldown, 18+ hard stop, session persistence, logout |
 | `test-profile.js` | Profile display, edits, persistence, minimum-interests rule |
 | `test-discovery.js` | Deck rendering, gesture + button swipes, verdict recording, empty state |
-| `test-filters.js` | Age/distance/interest filtering, empty result, reset |
-| `test-matching.js` | Match overlay on mutual like, both overlay actions, matches strip |
-| `test-chat.js` | Conversation list, unread badges, sending, auto-reply, persistence |
+| `test-filters.js` | Age/distance/gender/interest filtering, empty result, reset |
+| `test-matching.js` | Match overlay on mutual like, both overlay actions, matches strip, unmatch |
+| `test-chat.js` | Conversation list, unread badges, sending, auto-reply, read receipts, persistence |
 | `test-safety.js` | Report (reason picker, 24h moderation notice) and block from deck, match row, and chat |
 | `test-settings.js` | Settings screen, legal docs (settings + signup), notification toggle, data export, account deletion |
 | `test-photos.js` | Photo grid (add/reorder/remove/cap), simulated moderation states, rejection badge, approved-only rendering on cards |

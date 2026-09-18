@@ -1,15 +1,15 @@
 'use strict';
-// Feature: settings & compliance (spec 01 — edit prefs, notification toggle,
-// privacy policy + ToS from settings AND at signup, support contact, data export,
-// logout, real in-app account deletion). Non-negotiables 4 and 5.
+// Feature: settings & compliance (contract 02 — POST /devices, POST /me/export
+// 202, DELETE /me; spec 01 non-negotiables 4+5). Guards: legal at signup and in
+// settings, notification toggle persistence, export, logout, deletion.
 
-const { suite, assert, freshApp, signUp, storedState } = require('./harness');
+const { suite, assert, freshApp, signUp, logIn, storedState, DEFAULT_PHONE } = require('./harness');
 
 suite('Settings & compliance', async ({ page, test }) => {
 
   await test('legal links are shown at signup and open the policies', async () => {
     await freshApp(page);
-    await page.click('#btn-goto-signup');
+    await page.click('#btn-get-started');
     assert(await page.locator('#link-tos').isVisible(), 'ToS link missing from signup');
     await page.click('#link-privacy');
     await page.waitForSelector('#legal-backdrop.open');
@@ -49,14 +49,13 @@ suite('Settings & compliance', async ({ page, test }) => {
     await page.click('#btn-set-prefs');
     await page.waitForSelector('#filter-backdrop.open');
     await page.click('#btn-apply-filters');
-    await page.waitForTimeout(200);
-    assert(!(await page.locator('#filter-backdrop.open').count()), 'filter sheet did not close');
+    await page.waitForFunction(() => !document.getElementById('filter-backdrop').classList.contains('open'));
   });
 
   await test('notification toggle persists across reload', async () => {
     assert(await page.isChecked('#toggle-notif'), 'toggle should default on');
     await page.click('#toggle-notif');
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(300);
     assert((await storedState(page)).settings.notifications === false, 'toggle not saved');
     await page.reload();
     await page.waitForSelector('#screen-app.active');
@@ -65,29 +64,27 @@ suite('Settings & compliance', async ({ page, test }) => {
     assert(!(await page.isChecked('#toggle-notif')), 'toggle state lost on reload');
   });
 
-  await test('data export shows the full account as JSON', async () => {
+  await test('data export requests via the API and shows the account as JSON', async () => {
     await page.click('#btn-export');
     await page.waitForSelector('#export-backdrop.open');
     const json = JSON.parse(await page.inputValue('#export-json'));
-    assert(json.user && json.user.name === 'Sam', 'user missing from export');
+    assert(/202/.test(json.export_request), 'export request not accepted');
+    assert(json.me && json.me.profile.name === 'Sam', 'profile missing from export');
     assert(Array.isArray(json.matches) && json.matches.length >= 2, 'matches missing from export');
     assert(json.settings && json.settings.notifications === false, 'settings missing from export');
-    assert(json.convos && json.convos.maya, 'conversations missing from export');
+    const threads = Object.keys(json.messages || {});
+    assert(threads.length >= 2 && json.messages[threads[0]].length >= 1, 'messages missing from export');
     await page.click('#btn-export-close');
   });
 
   await test('logout is available from settings', async () => {
     await page.click('#btn-logout-settings');
     await page.waitForSelector('#screen-welcome.active');
-    assert(!(await storedState(page)), 'storage not cleared');
+    assert(!(await storedState(page)), 'session not cleared');
   });
 
   await test('account deletion requires confirmation — cancel keeps the account', async () => {
-    await page.click('#btn-goto-login');
-    await page.fill('#li-email', 'sam@example.com');
-    await page.fill('#li-password', 'hunter22');
-    await page.click('#form-login button[type=submit]');
-    await page.waitForSelector('#screen-app.active');
+    await logIn(page, DEFAULT_PHONE);
     await page.click('#tab-btn-profile');
     await page.click('#btn-open-settings');
     await page.click('#btn-delete-account');

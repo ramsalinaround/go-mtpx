@@ -1,12 +1,16 @@
 'use strict';
 // Shared test harness for the Maktub prototype regression suite.
 // Drives the single-file app (../index.html) in phone-emulated Chromium.
+// The app speaks to an in-page mock backend implementing
+// docs/spec/02-api-contract.md; window.__maktub exposes test hooks.
 
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
 const APP_URL = 'file://' + path.resolve(__dirname, '..', 'index.html');
+const OTP_CODE = '123456';
+const DEFAULT_PHONE = '+13035550101';
 
 function chromiumPath() {
   if (process.env.MAKTUB_CHROMIUM) return process.env.MAKTUB_CHROMIUM;
@@ -18,7 +22,14 @@ function assert(cond, msg) {
   if (!cond) throw new Error(msg || 'assertion failed');
 }
 
-// Fresh app with cleared storage, landed on the welcome screen.
+function birthdateForAge(age) {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - age);
+  d.setDate(d.getDate() - 40); // safely past this year's birthday
+  return d.toISOString().slice(0, 10);
+}
+
+// Fresh app with cleared storage (mock-backend DB included), on the welcome screen.
 async function freshApp(page) {
   await page.goto(APP_URL);
   await page.evaluate(() => { try { localStorage.clear(); } catch (e) {} });
@@ -26,24 +37,41 @@ async function freshApp(page) {
   await page.waitForSelector('#screen-welcome.active');
 }
 
-// Walk signup + profile setup; ends on the discover deck.
+// Walk phone -> OTP -> profile setup; ends on the discover deck.
 async function signUp(page, opts = {}) {
   const o = Object.assign({
-    name: 'Sam', age: '27', email: 'sam@example.com', password: 'hunter22',
-    bio: 'Test-run bio.', interests: ['Coffee', 'Live music', 'Hiking'],
+    name: 'Sam', age: 27, phone: DEFAULT_PHONE, bio: 'Test-run bio.',
+    gender: 'nonbinary', showMe: 'everyone',
+    interests: ['Coffee', 'Live music', 'Hiking'],
   }, opts);
-  await page.click('#btn-goto-signup');
-  await page.fill('#su-name', o.name);
-  await page.fill('#su-age', o.age);
-  await page.fill('#su-email', o.email);
-  await page.fill('#su-password', o.password);
-  await page.click('#form-signup button[type=submit]');
+  await page.click('#btn-get-started');
+  await page.fill('#ph-number', o.phone);
+  await page.click('#btn-send-code');
+  await page.waitForSelector('#screen-otp.active');
+  await page.fill('#otp-code', OTP_CODE);
+  await page.click('#form-otp button[type=submit]');
   await page.waitForSelector('#screen-setup.active');
+  await page.fill('#set-name', o.name);
+  await page.fill('#set-birthdate', birthdateForAge(o.age));
+  await page.selectOption('#set-gender', o.gender);
+  await page.selectOption('#set-pref', o.showMe);
   await page.fill('#set-bio', o.bio);
   for (const t of o.interests) {
     await page.click(`#setup-interests .chip:has-text("${t}")`);
   }
   await page.click('#form-setup button[type=submit]');
+  await page.waitForSelector('#screen-app.active');
+  await page.waitForSelector('.deck-card, .deck-empty');
+}
+
+// Log in an existing account (onboarding already complete).
+async function logIn(page, phone = DEFAULT_PHONE) {
+  await page.click('#btn-get-started');
+  await page.fill('#ph-number', phone);
+  await page.click('#btn-send-code');
+  await page.waitForSelector('#screen-otp.active');
+  await page.fill('#otp-code', OTP_CODE);
+  await page.click('#form-otp button[type=submit]');
   await page.waitForSelector('#screen-app.active');
 }
 
@@ -66,11 +94,17 @@ function topCardId(page) {
   });
 }
 
+// Test-facing view of the account state, served by the mock backend.
 function storedState(page) {
-  return page.evaluate(() => {
-    try { return JSON.parse(localStorage.getItem('maktub-proto-v1')); }
-    catch (e) { return null; }
-  });
+  return page.evaluate(() => window.__maktub.snapshot());
+}
+
+// Raw API access for contract-conformance tests: returns {status, data|error}.
+function rawRest(page, method, path, body, token) {
+  return page.evaluate(
+    args => window.__maktub.rawRest(args[0], args[1], args[2], args[3]),
+    [method, path, body === undefined ? null : body, token === undefined ? null : token]
+  );
 }
 
 // suite(name, async ({ page, test, ... }) => { ... })
@@ -124,4 +158,5 @@ function suite(name, body) {
   })().catch(e => { console.error(e); process.exit(1); });
 }
 
-module.exports = { APP_URL, suite, assert, freshApp, signUp, dragCard, topCardId, storedState };
+module.exports = { APP_URL, OTP_CODE, DEFAULT_PHONE, suite, assert, freshApp, signUp,
+  logIn, dragCard, topCardId, storedState, rawRest, birthdateForAge };

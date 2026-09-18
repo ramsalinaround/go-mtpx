@@ -6,6 +6,7 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 
 const suites = [
+  'test-api.js',
   'test-auth.js',
   'test-profile.js',
   'test-discovery.js',

@@ -1,7 +1,9 @@
 'use strict';
-// Feature: matches list + chat (spec 01/07 — conversation list with previews and
-// unread badge, 1:1 text chat). Guards: seeded conversations, unread dot
-// lifecycle, sending, the auto-reply loop, preview updates.
+// Feature: matches list + chat (contract 02 — messages over the WS frame set
+// with a REST fallback; message.new echoes client_id; message.read drives
+// read receipts; POST /matches/{id}/read clears unread).
+// Guards: seeded conversations, unread lifecycle, sending, auto-reply,
+// read receipts, preview updates, persistence.
 
 const { suite, assert, freshApp, signUp } = require('./harness');
 
@@ -30,6 +32,7 @@ suite('Matches list & chat', async ({ page, test }) => {
     assert(await page.locator('.bubble.them').count() >= 1, 'history missing');
     await page.click('#screen-chat [data-back]');
     await page.waitForSelector('#view-matches.active');
+    await page.waitForTimeout(300);
     assert(await page.locator('#dot-matches.show').count() === 0, 'unread badge not cleared');
   });
 
@@ -45,8 +48,8 @@ suite('Matches list & chat', async ({ page, test }) => {
     const before = await page.locator('.bubble.me').count();
     await page.fill('#chat-input', 'Flat white, oat milk. Judge away.');
     await page.click('#chat-send');
-    await page.waitForTimeout(200);
-    assert(await page.locator('.bubble.me').count() === before + 1, 'message not appended');
+    await page.waitForFunction(
+      n => document.querySelectorAll('.bubble.me').length === n + 1, before, { timeout: 3000 });
     assert(/\d{1,2}:\d{2}/.test(await page.locator('.bubble.me .t').last().textContent()), 'no timestamp');
     assert((await page.inputValue('#chat-input')) === '', 'input not cleared');
   });
@@ -61,8 +64,16 @@ suite('Matches list & chat', async ({ page, test }) => {
     assert(last.trim().length > 0, 'no reply text');
   });
 
+  await test('a read receipt appears on my last read message', async () => {
+    // the bot sends message.read shortly after replying
+    await page.waitForSelector('.bubble.me .receipt', { timeout: 4000 });
+    const receipt = await page.locator('.bubble.me .receipt').last().textContent();
+    assert(/Read/.test(receipt), 'wrong receipt text');
+  });
+
   await test('matches list preview updates to the latest message', async () => {
-    const latest = (await page.locator('.bubble').last().textContent()).replace(/\d{1,2}:\d{2}.*$/, '').trim();
+    const latest = (await page.locator('.bubble').last().textContent())
+      .replace(/\d{1,2}:\d{2}.*$/, '').trim();
     await page.click('#screen-chat [data-back]');
     await page.waitForSelector('#view-matches.active');
     const preview = await page.locator('.match-row:has-text("Jonah") .preview').textContent();
@@ -73,6 +84,7 @@ suite('Matches list & chat', async ({ page, test }) => {
     await page.reload();
     await page.waitForSelector('#screen-app.active');
     await page.click('#tab-btn-matches');
+    await page.waitForSelector('.match-row');
     await page.click('.match-row:has-text("Jonah")');
     await page.waitForSelector('#screen-chat.active');
     assert(await page.locator('.bubble.me').count() >= 1, 'sent message lost on reload');
