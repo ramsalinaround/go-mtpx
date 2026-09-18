@@ -13,6 +13,7 @@ const suites = [
   'test-matching.js',
   'test-chat.js',
   'test-safety.js',
+  'test-settings.js',
 ];
 
 const failed = [];

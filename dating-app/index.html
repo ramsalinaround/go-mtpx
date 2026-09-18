@@ -579,6 +579,98 @@
   .profile-card h3 { margin: 0; font-family: var(--font-display); font-size: 24px; font-weight: 600; }
   .profile-card p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
 
+  /* ---------- settings ---------- */
+  .settings-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .set-group {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .set-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 16px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .set-row:last-child { border-bottom: none; }
+  .set-row .sub-val { color: var(--muted); font-size: 14px; }
+  .set-row.danger { color: var(--accent); font-weight: 700; }
+  .set-row .chev { color: var(--muted); flex: none; width: 18px; height: 18px; }
+  .switch {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 48px; height: 28px;
+    border-radius: 999px;
+    background: var(--line);
+    position: relative;
+    cursor: pointer;
+    transition: background .15s ease;
+    flex: none;
+    margin: 0;
+  }
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+    transition: left .15s ease;
+  }
+  .switch:checked { background: var(--accent); }
+  .switch:checked::after { left: 23px; }
+  .legal-inline { color: var(--muted); font-size: 13px; text-align: center; margin: 0; }
+  .link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .legal-body {
+    max-height: 45vh;
+    overflow-y: auto;
+    color: var(--muted);
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .legal-body p { margin: 0; }
+  .legal-body strong { color: var(--ink); }
+  #export-json {
+    width: 100%;
+    min-height: 160px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    resize: none;
+  }
+
   /* ---------- safety (report / block) ---------- */
   .card-safety {
     position: absolute;
@@ -774,6 +866,9 @@
         </div>
         <p class="form-error" id="su-error" role="alert"></p>
         <button class="btn" type="submit">Continue</button>
+        <p class="legal-inline">By continuing you agree to our
+          <button type="button" class="link" id="link-tos">Terms of Service</button> and
+          <button type="button" class="link" id="link-privacy">Privacy Policy</button>.</p>
       </form>
     </div>
   </section>
@@ -897,6 +992,10 @@
             </div>
             <button class="btn quiet" type="submit">Save changes</button>
           </form>
+          <button class="btn quiet" id="btn-open-settings">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>
+            Settings
+          </button>
           <button class="btn ghost" id="btn-logout">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
             Log out
@@ -972,6 +1071,86 @@
       </div>
       <button class="btn" id="btn-apply-filters">Apply filters</button>
       <button class="btn ghost" id="btn-reset-filters">Reset</button>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS ============ -->
+  <section class="screen" id="screen-settings" aria-label="Settings">
+    <header class="chat-head">
+      <button class="back-btn" id="btn-settings-back" style="padding-right:2px" aria-label="Back to profile">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="col">
+        <p class="name">Settings</p>
+      </div>
+    </header>
+    <div class="settings-scroll">
+      <p class="section-label" style="padding-inline:4px">Preferences</p>
+      <div class="set-group">
+        <button class="set-row" id="btn-set-prefs">
+          <span>Discovery preferences</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <div class="set-row" style="cursor:default">
+          <label for="toggle-notif" style="cursor:pointer">New match &amp; message notifications</label>
+          <input type="checkbox" class="switch" id="toggle-notif" checked>
+        </div>
+      </div>
+      <p class="section-label" style="padding-inline:4px">Legal &amp; support</p>
+      <div class="set-group">
+        <button class="set-row" id="btn-tos"><span>Terms of Service</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="set-row" id="btn-privacy"><span>Privacy Policy</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <div class="set-row" style="cursor:default">
+          <span>Support</span>
+          <span class="sub-val" id="support-contact">support@maktub.app</span>
+        </div>
+        <button class="set-row" id="btn-export"><span>Export my data</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <p class="section-label" style="padding-inline:4px">Account</p>
+      <div class="set-group">
+        <button class="set-row" id="btn-logout-settings"><span>Log out</span></button>
+        <button class="set-row danger" id="btn-delete-account"><span>Delete account</span></button>
+      </div>
+      <p class="safety-note" style="padding:8px 4px 0">Maktub is a prototype — all data lives only in this browser.</p>
+    </div>
+  </section>
+
+  <!-- ============ LEGAL SHEET ============ -->
+  <div class="sheet-backdrop" id="legal-backdrop">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="legal-title">
+      <div class="sheet-grab" aria-hidden="true"></div>
+      <h3 id="legal-title">Legal</h3>
+      <div class="legal-body" id="legal-body"></div>
+      <button class="btn" id="btn-legal-close">Close</button>
+    </div>
+  </div>
+
+  <!-- ============ DATA EXPORT SHEET ============ -->
+  <div class="sheet-backdrop" id="export-backdrop">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="export-title">
+      <div class="sheet-grab" aria-hidden="true"></div>
+      <h3 id="export-title">Your data</h3>
+      <p class="safety-note">Everything Maktub stores about you, as JSON. In the prototype it's prepared instantly; a real backend would email it.</p>
+      <textarea id="export-json" readonly aria-label="Exported data as JSON"></textarea>
+      <button class="btn quiet" id="btn-copy-export">Copy to clipboard</button>
+      <button class="btn" id="btn-export-close">Done</button>
+    </div>
+  </div>
+
+  <!-- ============ DELETE ACCOUNT SHEET ============ -->
+  <div class="sheet-backdrop" id="delete-backdrop">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+      <div class="sheet-grab" aria-hidden="true"></div>
+      <h3 id="delete-title">Delete account</h3>
+      <p class="safety-note">This permanently deletes your profile, matches, messages, reports, and settings. It cannot be undone, and it is not the same as logging out.</p>
+      <button class="btn" id="btn-delete-confirm">Permanently delete my account</button>
+      <button class="btn ghost" id="btn-delete-cancel">Cancel</button>
     </div>
   </div>
 
@@ -1133,6 +1312,7 @@
     convos: {},               // id -> [{from:"me"|"them", text, at}]
     blocked: {},              // id -> true (both directions, immediate)
     reports: [],              // [{id, reason, at}]
+    settings: { notifications: true },
     filters: { ageMin: 21, ageMax: 40, dist: 25, interests: [] },
     pendingSignup: null,
     activeChat: null,
@@ -1144,7 +1324,7 @@
       localStorage.setItem(STORE_KEY, JSON.stringify({
         user: state.user, seen: state.seen, matches: state.matches,
         convos: state.convos, blocked: state.blocked, reports: state.reports,
-        filters: state.filters
+        settings: state.settings, filters: state.filters
       }));
     } catch (e) { /* private mode etc. — prototype runs fine without persistence */ }
   }
@@ -1160,6 +1340,7 @@
       state.convos = d.convos || {};
       state.blocked = d.blocked || {};
       state.reports = d.reports || [];
+      state.settings = d.settings || { notifications: true };
       state.filters = d.filters || state.filters;
       return true;
     } catch (e) { return false; }
@@ -1364,6 +1545,7 @@
     if (fresh) {
       state.seen = {}; state.matches = []; state.convos = {};
       state.blocked = {}; state.reports = [];
+      state.settings = { notifications: true };
       state.filters = { ageMin: 21, ageMax: 40, dist: 25, interests: [] };
       seedMatches();
     }
@@ -1375,14 +1557,16 @@
     if (fresh) toast("Welcome, " + user.name + "!");
   }
 
-  $("btn-logout").addEventListener("click", function () {
+  function resetSession() {
     state.user = null; state.pendingSignup = null; state.activeChat = null;
     state.seen = {}; state.matches = []; state.convos = {}; state.deck = [];
     state.blocked = {}; state.reports = [];
+    state.settings = { notifications: true };
     try { localStorage.removeItem(STORE_KEY); } catch (e) { /* fine */ }
     showScreen("screen-welcome");
-    toast("Logged out");
-  });
+  }
+  function logOut() { resetSession(); toast("Logged out"); }
+  $("btn-logout").addEventListener("click", logOut);
 
   /* ---------------- deck ---------------- */
 
@@ -1829,6 +2013,108 @@
   });
   $("btn-chat-safety").addEventListener("click", function () {
     if (state.activeChat) openSafety(state.activeChat);
+  });
+
+  /* ---------------- settings & compliance ---------------- */
+
+  var LEGAL = {
+    tos: {
+      title: "Terms of Service",
+      body: [
+        "<strong>Prototype notice.</strong> Maktub is a demonstration app. These placeholder terms show where the real ones will live.",
+        "<strong>1. Eligibility.</strong> You must be 18 or older to use Maktub. Accounts found to belong to minors are removed.",
+        "<strong>2. Your conduct.</strong> Be honest and be kind. Harassment, hate, spam, and impersonation are grounds for removal, and every profile can be reported or blocked in one tap.",
+        "<strong>3. Your content.</strong> You own what you post and are responsible for it. Photos and bios may be reviewed by moderation before or after they appear.",
+        "<strong>4. Termination.</strong> You can delete your account at any time from Settings, which permanently removes your data. We may suspend accounts that break these terms.",
+        "<strong>5. Changes.</strong> If these terms change materially, you'll be asked to review them the next time you open the app."
+      ]
+    },
+    privacy: {
+      title: "Privacy Policy",
+      body: [
+        "<strong>Prototype notice.</strong> This prototype stores everything locally in your browser — nothing is sent anywhere. This placeholder shows where the real policy will live.",
+        "<strong>What we'd collect.</strong> Your profile (name, birthdate, photos, bio, preferences), your likes and matches, your messages, and approximate location used only to compute rounded distances.",
+        "<strong>What others see.</strong> Your first name, age, photos, bio, interests, and a distance rounded to whole kilometres — never your birthdate or precise location.",
+        "<strong>What we'd never do.</strong> Sell your personal data, show your exact location, or share your messages outside legal requirements.",
+        "<strong>Your controls.</strong> Export your data or permanently delete your account at any time from Settings. Deletion removes profile, matches, and messages."
+      ]
+    }
+  };
+
+  function openLegal(kind) {
+    var doc = LEGAL[kind];
+    $("legal-title").textContent = doc.title;
+    var body = $("legal-body");
+    body.textContent = "";
+    doc.body.forEach(function (para) {
+      var p = el("p");
+      p.innerHTML = para;
+      body.appendChild(p);
+    });
+    $("legal-backdrop").classList.add("open");
+  }
+  $("btn-tos").addEventListener("click", function () { openLegal("tos"); });
+  $("btn-privacy").addEventListener("click", function () { openLegal("privacy"); });
+  $("link-tos").addEventListener("click", function () { openLegal("tos"); });
+  $("link-privacy").addEventListener("click", function () { openLegal("privacy"); });
+  $("btn-legal-close").addEventListener("click", function () { $("legal-backdrop").classList.remove("open"); });
+  $("legal-backdrop").addEventListener("click", function (ev) {
+    if (ev.target === $("legal-backdrop")) $("legal-backdrop").classList.remove("open");
+  });
+
+  $("btn-open-settings").addEventListener("click", function () {
+    $("toggle-notif").checked = !!state.settings.notifications;
+    showScreen("screen-settings");
+  });
+  $("btn-settings-back").addEventListener("click", function () {
+    showScreen("screen-app");
+    showTab("profile");
+  });
+  $("btn-set-prefs").addEventListener("click", openFilters);
+  $("toggle-notif").addEventListener("change", function () {
+    state.settings.notifications = $("toggle-notif").checked;
+    save();
+    toast(state.settings.notifications ? "Notifications on" : "Notifications off");
+  });
+
+  $("btn-export").addEventListener("click", function () {
+    var data = {
+      exported_at: new Date().toISOString(),
+      user: state.user, seen: state.seen, matches: state.matches,
+      convos: state.convos, blocked: state.blocked, reports: state.reports,
+      settings: state.settings, filters: state.filters
+    };
+    $("export-json").value = JSON.stringify(data, null, 2);
+    $("export-backdrop").classList.add("open");
+  });
+  $("btn-copy-export").addEventListener("click", function () {
+    var text = $("export-json").value;
+    var done = function () { toast("Copied to clipboard"); };
+    var fallback = function () {
+      $("export-json").select();
+      toast("Press Ctrl/Cmd+C to copy");
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, fallback);
+      } else { fallback(); }
+    } catch (e) { fallback(); }
+  });
+  $("btn-export-close").addEventListener("click", function () { $("export-backdrop").classList.remove("open"); });
+  $("export-backdrop").addEventListener("click", function (ev) {
+    if (ev.target === $("export-backdrop")) $("export-backdrop").classList.remove("open");
+  });
+
+  $("btn-logout-settings").addEventListener("click", logOut);
+  $("btn-delete-account").addEventListener("click", function () { $("delete-backdrop").classList.add("open"); });
+  $("btn-delete-cancel").addEventListener("click", function () { $("delete-backdrop").classList.remove("open"); });
+  $("delete-backdrop").addEventListener("click", function (ev) {
+    if (ev.target === $("delete-backdrop")) $("delete-backdrop").classList.remove("open");
+  });
+  $("btn-delete-confirm").addEventListener("click", function () {
+    $("delete-backdrop").classList.remove("open");
+    resetSession();
+    toast("Account deleted");
   });
 
   /* ---------------- profile ---------------- */

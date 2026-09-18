@@ -57,7 +57,7 @@ Rules that keep it usable:
 | 5 | Match on mutual like (modal → chat) | Done | `test-matching.js` | Mutual likes pre-flagged in mock data |
 | 6 | Matches list + 1:1 chat (previews, unread, receipts) | Done | `test-chat.js` | Canned auto-replies instead of WebSocket; no read receipts yet |
 | 7 | Safety: report + block from every surface, moderation notice | Done | `test-safety.js` | Reports stored locally; no real moderation backend |
-| 8 | Settings: legal links, data export, account deletion, notification toggle | **Not built** (only logout + profile edit) | `test-settings.js` (to add) | — |
+| 8 | Settings: legal links, data export, account deletion, notification toggle | Done | `test-settings.js` | Placeholder legal copy; export shows JSON in-app (sandbox blocks downloads); notifications are a stored toggle only |
 | 9 | Push notifications (match, message) | Out of prototype scope | — | Browser prototype; revisit in client build |
 
 Spec **v1 non-goals** (no UI, no stubs, no tests): monetization, voice/video/image chat,
@@ -71,9 +71,11 @@ undo/rewind, "who liked you", verification badges, ML feed controls, Android/iPa
   confirmation + optional block) and block reachable from deck card, match row, and chat
   header; blocked users vanish from deck, matches, and unread badges immediately and
   persistently. Shipped with `test-safety.js` (11 tests).
-- **M3 — Settings & compliance (spec P0).** Settings screen: privacy policy + ToS links,
-  support contact, data export request, notification toggle, in-app account deletion
-  (deletes local state, distinct from logout). Ship with `test-settings.js`.
+- **M3 — Settings & compliance (spec P0). ✅ Done.** Settings screen off the Profile tab:
+  discovery-preferences shortcut, notification toggle (persisted), ToS + privacy policy
+  (also linked at signup), support contact, data export (full account as JSON),
+  logout, and in-app account deletion behind an explicit confirmation, distinct from
+  logout. Shipped with `test-settings.js` (10 tests).
 - **M4 — Profile photos.** 1–6 photo slots with reorder and owner-visible
   pending/rejected moderation states (simulated moderation in the prototype). Extend
   `test-profile.js`.
@@ -91,8 +93,8 @@ undo/rewind, "who liked you", verification badges, ML feed controls, Android/iPa
 | 18+ hard stop at signup | Done — guarded by `test-auth.js` |
 | Report/block from every user-content surface | Done — guarded by `test-safety.js` |
 | Moderation commitment on report confirmation | Done — guarded by `test-safety.js` |
-| Real in-app account deletion | M3 |
-| Privacy policy + ToS at signup and in settings | M3 |
+| Real in-app account deletion | Done — guarded by `test-settings.js` |
+| Privacy policy + ToS at signup and in settings | Done — guarded by `test-settings.js` |
 | Never render precise location (rounded km only) | Done — guarded by `test-discovery.js` |
 | Photos render only when approved | M4 |
 
