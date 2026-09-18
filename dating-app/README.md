@@ -19,6 +19,9 @@ It covers the full V1 flow with mock data only — nothing leaves your browser:
 - **Chat** — per-match messaging with canned auto-replies (and a typing
   indicator) so the prototype feels alive.
 - **Profile** — edit your bio, interests, and profile color; log out to reset.
+- **Safety** — report (with reason picker and moderation notice) or block any
+  profile from its deck card, match row, or chat header; blocking is immediate,
+  both directions, and permanent.
 
 State persists to `localStorage` when available, and the prototype degrades
 gracefully without it. This directory is unrelated to the Go MTP library in
@@ -46,6 +49,7 @@ feature can't silently break an existing one:
 | `test-filters.js` | Age/distance/interest filtering, empty result, reset |
 | `test-matching.js` | Match overlay on mutual like, both overlay actions, matches strip |
 | `test-chat.js` | Conversation list, unread badges, sending, auto-reply, persistence |
+| `test-safety.js` | Report (reason picker, 24h moderation notice) and block from deck, match row, and chat |
 
 Run them all (must be green before merging any change — see `docs/PLAN.md`):
 

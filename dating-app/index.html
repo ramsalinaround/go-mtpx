@@ -447,6 +447,7 @@
     cursor: pointer;
   }
   .match-row:hover { background: var(--surface-2); }
+  .match-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .match-row .avatar { width: 56px; height: 56px; font-size: 22px; }
   .match-row .col { flex: 1; min-width: 0; }
   .match-row .name { font-weight: 700; font-size: 17px; margin: 0; }
@@ -577,6 +578,50 @@
   .profile-card .avatar { width: 72px; height: 72px; font-size: 28px; }
   .profile-card h3 { margin: 0; font-family: var(--font-display); font-size: 24px; font-weight: 600; }
   .profile-card p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+
+  /* ---------- safety (report / block) ---------- */
+  .card-safety {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(20, 8, 14, .35);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+  }
+  .card-safety svg { width: 18px; height: 18px; }
+  .row-menu {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: none;
+    color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex: none;
+  }
+  .row-menu:hover { background: var(--surface-2); }
+  .row-menu svg { width: 18px; height: 18px; }
+  .safety-list { display: flex; flex-direction: column; gap: 10px; }
+  .safety-opt {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    cursor: pointer;
+    text-align: left;
+    font-weight: 700;
+  }
+  .safety-opt .icon { width: 20px; height: 20px; }
+  .safety-opt.danger { color: var(--accent); }
+  .safety-note { color: var(--muted); font-size: 14px; margin: 0; }
+  .safety-view { display: flex; flex-direction: column; gap: 14px; }
+  [hidden] { display: none !important; }
+  .safety-done-title { font-family: var(--font-display); font-size: 24px; font-weight: 600; margin: 0; }
 
   /* ---------- sheets & overlays ---------- */
   .sheet-backdrop {
@@ -891,6 +936,9 @@
         <p class="name" id="chat-name"></p>
         <p class="sub" id="chat-sub"></p>
       </div>
+      <button class="icon-btn" id="btn-chat-safety" aria-label="Report or block">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+      </button>
     </header>
     <div class="chat-log" id="chat-log"></div>
     <form class="composer" id="form-chat">
@@ -924,6 +972,46 @@
       </div>
       <button class="btn" id="btn-apply-filters">Apply filters</button>
       <button class="btn ghost" id="btn-reset-filters">Reset</button>
+    </div>
+  </div>
+
+  <!-- ============ SAFETY SHEET (report / block) ============ -->
+  <div class="sheet-backdrop" id="safety-backdrop">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="safety-title">
+      <div class="sheet-grab" aria-hidden="true"></div>
+      <h3 id="safety-title">Safety</h3>
+
+      <div id="safety-menu" class="safety-view">
+        <div class="safety-list">
+          <button class="safety-opt" id="btn-report-open">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4m0 1h13l-2.5 4L17 13H4"/></svg>
+            <span id="safety-report-label">Report</span>
+          </button>
+          <button class="safety-opt danger" id="btn-block-open">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></svg>
+            <span id="safety-block-label">Block</span>
+          </button>
+        </div>
+        <p class="safety-note">Reports are confidential. Blocking is immediate and works both ways.</p>
+      </div>
+
+      <div id="safety-reasons" class="safety-view" hidden>
+        <p class="safety-note" id="safety-reasons-note">Why are you reporting them?</p>
+        <div class="safety-list" id="reason-list"></div>
+      </div>
+
+      <div id="safety-report-done" class="safety-view" hidden>
+        <h4 class="safety-done-title">Report received</h4>
+        <p class="safety-note">Thank you for helping keep Maktub safe. Our team reviews every report within 24 hours. They won't know you reported them.</p>
+        <button class="btn ghost" id="btn-report-block">Also block them</button>
+        <button class="btn" id="btn-safety-done">Done</button>
+      </div>
+
+      <div id="safety-block-confirm" class="safety-view" hidden>
+        <p class="safety-note" id="safety-block-note">Block them? You won't see each other anywhere in Maktub. This is immediate and can't be undone.</p>
+        <button class="btn" id="btn-block-confirm">Block</button>
+        <button class="btn ghost" id="btn-safety-cancel">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -1043,6 +1131,8 @@
     seen: {},                 // id -> "like" | "pass"
     matches: [],              // [{id, at, unread, lastAt}]
     convos: {},               // id -> [{from:"me"|"them", text, at}]
+    blocked: {},              // id -> true (both directions, immediate)
+    reports: [],              // [{id, reason, at}]
     filters: { ageMin: 21, ageMax: 40, dist: 25, interests: [] },
     pendingSignup: null,
     activeChat: null,
@@ -1053,7 +1143,8 @@
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({
         user: state.user, seen: state.seen, matches: state.matches,
-        convos: state.convos, filters: state.filters
+        convos: state.convos, blocked: state.blocked, reports: state.reports,
+        filters: state.filters
       }));
     } catch (e) { /* private mode etc. — prototype runs fine without persistence */ }
   }
@@ -1067,6 +1158,8 @@
       state.seen = d.seen || {};
       state.matches = d.matches || [];
       state.convos = d.convos || {};
+      state.blocked = d.blocked || {};
+      state.reports = d.reports || [];
       state.filters = d.filters || state.filters;
       return true;
     } catch (e) { return false; }
@@ -1270,6 +1363,7 @@
     state.user = user;
     if (fresh) {
       state.seen = {}; state.matches = []; state.convos = {};
+      state.blocked = {}; state.reports = [];
       state.filters = { ageMin: 21, ageMax: 40, dist: 25, interests: [] };
       seedMatches();
     }
@@ -1284,6 +1378,7 @@
   $("btn-logout").addEventListener("click", function () {
     state.user = null; state.pendingSignup = null; state.activeChat = null;
     state.seen = {}; state.matches = []; state.convos = {}; state.deck = [];
+    state.blocked = {}; state.reports = [];
     try { localStorage.removeItem(STORE_KEY); } catch (e) { /* fine */ }
     showScreen("screen-welcome");
     toast("Logged out");
@@ -1303,7 +1398,7 @@
   }
   function rebuildDeck() {
     state.deck = POOL
-      .filter(function (p) { return !(p.id in state.seen) && passesFilters(p); })
+      .filter(function (p) { return !state.blocked[p.id] && !(p.id in state.seen) && passesFilters(p); })
       .map(function (p) { return p.id; })
       .reverse(); // top card = last element
   }
@@ -1335,6 +1430,14 @@
     p.interests.forEach(function (t) { tags.appendChild(el("span", "tag", t)); });
     info.appendChild(tags);
     card.appendChild(info);
+
+    var safety = el("button", "card-safety");
+    safety.type = "button";
+    safety.setAttribute("aria-label", "Report or block " + p.name);
+    safety.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4m0 1h13l-2.5 4L17 13H4"/></svg>';
+    safety.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
+    safety.addEventListener("click", function (ev) { ev.stopPropagation(); openSafety(p.id); });
+    card.appendChild(safety);
     return card;
   }
 
@@ -1447,7 +1550,7 @@
   });
 
   function updateBadges() {
-    var unread = state.matches.some(function (m) { return m.unread; });
+    var unread = state.matches.some(function (m) { return m.unread && !state.blocked[m.id]; });
     $("dot-matches").classList.toggle("show", unread);
   }
 
@@ -1459,8 +1562,9 @@
     listBox.textContent = "";
     strip.textContent = "";
 
-    var fresh = state.matches.filter(function (m) { return !(state.convos[m.id] || []).length; });
-    var talked = state.matches.filter(function (m) { return (state.convos[m.id] || []).length; });
+    var visible = state.matches.filter(function (m) { return !state.blocked[m.id]; });
+    var fresh = visible.filter(function (m) { return !(state.convos[m.id] || []).length; });
+    var talked = visible.filter(function (m) { return (state.convos[m.id] || []).length; });
     $("label-new-matches").hidden = !fresh.length;
 
     fresh.forEach(function (m) {
@@ -1474,7 +1578,7 @@
       strip.appendChild(b);
     });
 
-    if (!state.matches.length) {
+    if (!visible.length) {
       var note = el("div", "empty-note");
       note.appendChild(el("h3", null, "No matches yet"));
       note.appendChild(el("p", null, "Head to Discover and start swiping — someone out there already likes you."));
@@ -1494,7 +1598,9 @@
       var p = personById(m.id);
       var convo = state.convos[m.id];
       var last = convo[convo.length - 1];
-      var row = el("button", "match-row");
+      var row = el("div", "match-row");
+      row.setAttribute("role", "button");
+      row.tabIndex = 0;
       var av = el("div", "avatar");
       setAvatar(av, p.name, p.hues);
       row.appendChild(av);
@@ -1507,7 +1613,16 @@
       dot.classList.add("unread");
       if (m.unread) dot.classList.add("show");
       row.appendChild(dot);
+      var menu = el("button", "row-menu");
+      menu.type = "button";
+      menu.setAttribute("aria-label", "Report or block " + p.name);
+      menu.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
+      menu.addEventListener("click", function (ev) { ev.stopPropagation(); openSafety(m.id); });
+      row.appendChild(menu);
       row.addEventListener("click", function () { openChat(m.id); });
+      row.addEventListener("keydown", function (ev) {
+        if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openChat(m.id); }
+      });
       listBox.appendChild(row);
     });
   }
@@ -1638,6 +1753,82 @@
     state.filters = { ageMin: 21, ageMax: 40, dist: 25, interests: [] };
     save();
     openFilters();
+  });
+
+  /* ---------------- safety: report & block ---------------- */
+
+  var REPORT_REASONS = ["Fake profile or spam", "Inappropriate messages",
+    "Inappropriate photos", "Underage or minor", "Made me feel unsafe", "Other"];
+
+  var safetyTarget = null;
+
+  function showSafetyView(view) {
+    ["safety-menu", "safety-reasons", "safety-report-done", "safety-block-confirm"]
+      .forEach(function (id) { $(id).hidden = id !== "safety-" + view; });
+  }
+
+  function openSafety(id) {
+    safetyTarget = id;
+    var p = personById(id);
+    $("safety-title").textContent = p.name;
+    $("safety-report-label").textContent = "Report " + p.name;
+    $("safety-block-label").textContent = "Block " + p.name;
+    $("safety-reasons-note").textContent = "Why are you reporting " + p.name +
+      "? This is confidential — they won't be notified.";
+    $("safety-block-note").textContent = "Block " + p.name +
+      "? You won't see each other anywhere in Maktub. This is immediate and can't be undone.";
+    showSafetyView("menu");
+    $("safety-backdrop").classList.add("open");
+  }
+
+  function closeSafety() {
+    $("safety-backdrop").classList.remove("open");
+    safetyTarget = null;
+  }
+
+  function blockUser(id) {
+    var p = personById(id);
+    state.blocked[id] = true;
+    state.deck = state.deck.filter(function (x) { return x !== id; });
+    save();
+    closeSafety();
+    if (state.activeChat === id) {
+      state.activeChat = null;
+      showScreen("screen-app");
+      showTab("matches");
+    } else {
+      if ($("view-discover").classList.contains("active")) renderDeck();
+      if ($("view-matches").classList.contains("active")) renderMatches();
+    }
+    updateBadges();
+    toast(p.name + " blocked");
+  }
+
+  $("btn-report-open").addEventListener("click", function () {
+    var box = $("reason-list");
+    box.textContent = "";
+    REPORT_REASONS.forEach(function (reason) {
+      var b = el("button", "safety-opt", reason);
+      b.type = "button";
+      b.addEventListener("click", function () {
+        state.reports.push({ id: safetyTarget, reason: reason, at: Date.now() });
+        save();
+        showSafetyView("report-done");
+      });
+      box.appendChild(b);
+    });
+    showSafetyView("reasons");
+  });
+  $("btn-block-open").addEventListener("click", function () { showSafetyView("block-confirm"); });
+  $("btn-block-confirm").addEventListener("click", function () { blockUser(safetyTarget); });
+  $("btn-report-block").addEventListener("click", function () { blockUser(safetyTarget); });
+  $("btn-safety-done").addEventListener("click", closeSafety);
+  $("btn-safety-cancel").addEventListener("click", function () { showSafetyView("menu"); });
+  $("safety-backdrop").addEventListener("click", function (ev) {
+    if (ev.target === $("safety-backdrop")) closeSafety();
+  });
+  $("btn-chat-safety").addEventListener("click", function () {
+    if (state.activeChat) openSafety(state.activeChat);
   });
 
   /* ---------------- profile ---------------- */

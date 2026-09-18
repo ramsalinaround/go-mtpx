@@ -56,7 +56,7 @@ Rules that keep it usable:
 | 4 | Discovery deck (gesture + button swipes, rounded km, empty state) | Done | `test-discovery.js` | Mock candidate pool, no geo backend |
 | 5 | Match on mutual like (modal → chat) | Done | `test-matching.js` | Mutual likes pre-flagged in mock data |
 | 6 | Matches list + 1:1 chat (previews, unread, receipts) | Done | `test-chat.js` | Canned auto-replies instead of WebSocket; no read receipts yet |
-| 7 | Safety: report + block from every surface, moderation notice | **Not built** | `test-safety.js` (to add) | — |
+| 7 | Safety: report + block from every surface, moderation notice | Done | `test-safety.js` | Reports stored locally; no real moderation backend |
 | 8 | Settings: legal links, data export, account deletion, notification toggle | **Not built** (only logout + profile edit) | `test-settings.js` (to add) | — |
 | 9 | Push notifications (match, message) | Out of prototype scope | — | Browser prototype; revisit in client build |
 
@@ -67,9 +67,10 @@ undo/rewind, "who liked you", verification badges, ML feed controls, Android/iPa
 
 - **M1 — Test foundation (this change).** Spec pack landed in `docs/spec/`, repo
   reorganized, features 1–6 locked by suites, `run-all.js` green.
-- **M2 — Safety (spec P0).** Report (reason picker + "reviewed within 24 hours"
-  confirmation) and block reachable from deck card, match row, and chat; blocked users
-  vanish from deck/matches both directions. Ship with `test-safety.js`.
+- **M2 — Safety (spec P0). ✅ Done.** Report (reason picker + "reviewed within 24 hours"
+  confirmation + optional block) and block reachable from deck card, match row, and chat
+  header; blocked users vanish from deck, matches, and unread badges immediately and
+  persistently. Shipped with `test-safety.js` (11 tests).
 - **M3 — Settings & compliance (spec P0).** Settings screen: privacy policy + ToS links,
   support contact, data export request, notification toggle, in-app account deletion
   (deletes local state, distinct from logout). Ship with `test-settings.js`.
@@ -88,8 +89,8 @@ undo/rewind, "who liked you", verification badges, ML feed controls, Android/iPa
 | P0 item | Where it stands |
 |---------|-----------------|
 | 18+ hard stop at signup | Done — guarded by `test-auth.js` |
-| Report/block from every user-content surface | M2 |
-| Moderation commitment on report confirmation | M2 |
+| Report/block from every user-content surface | Done — guarded by `test-safety.js` |
+| Moderation commitment on report confirmation | Done — guarded by `test-safety.js` |
 | Real in-app account deletion | M3 |
 | Privacy policy + ToS at signup and in settings | M3 |
 | Never render precise location (rounded km only) | Done — guarded by `test-discovery.js` |
@@ -100,5 +101,5 @@ undo/rewind, "who liked you", verification badges, ML feed controls, Android/iPa
 ```sh
 cd dating-app/tests
 npm install          # first time only
-npm test             # runs run-all.js — must end "All 6 suites passed"
+npm test             # runs run-all.js — must end with all suites passed
 ```

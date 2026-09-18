@@ -12,6 +12,7 @@ const suites = [
   'test-filters.js',
   'test-matching.js',
   'test-chat.js',
+  'test-safety.js',
 ];
 
 const failed = [];
