@@ -30,11 +30,12 @@ discover → swipe → match → chat. Strategy:
 
 ```
 dating-app/
-├── index.html          # the app (single file: markup + styles + logic, mock data)
-├── README.md           # how to run the app and the tests
+├── index.html          # the client (single file; mock or remote transport)
+├── README.md           # how to run the app, the server, and the tests
 ├── docs/
 │   ├── PLAN.md         # this file — feature plan and status
 │   └── spec/           # product spec pack (01–02 present; 03–09 pending)
+├── server/             # reference Go backend: real HTTP + WebSocket per 02
 └── tests/              # per-feature regression suites (Playwright + Chromium)
     ├── package.json    # npm install && npm test
     ├── harness.js      # shared launch/signup/swipe helpers + suite runner
@@ -64,6 +65,7 @@ Rules that keep it usable:
 | 5 | Match on mutual like (modal → chat) | Done | `test-matching.js` | Mutual likes pre-flagged in mock data |
 | 6 | Matches list + 1:1 chat (previews, unread, read receipts, unmatch) | Done | `test-chat.js`, `test-matching.js` | WS is emulated in-page (frames per contract, always "connected"); bot partners auto-reply |
 | 6b | API contract (02) end to end | Done | `test-api.js` | In-page mock backend; `banned` and rate-limit interstitials not simulated |
+| 6c | Reference Go backend + remote client transport | Done | `test-server.js` | In-memory store (no Postgres/Redis/S3); single-node; OTP logged, not sent |
 | 7 | Safety: report + block from every surface, moderation notice | Done | `test-safety.js` | Reports stored locally; no real moderation backend |
 | 8 | Settings: legal links, data export, account deletion, notification toggle | Done | `test-settings.js` | Placeholder legal copy; export shows JSON in-app (sandbox blocks downloads); notifications are a stored toggle only |
 | 9 | Push notifications (match, message) | Out of prototype scope | — | Browser prototype; revisit in client build |
@@ -98,8 +100,20 @@ undo/rewind, "who liked you", verification badges, ML feed controls, Android/iPa
   (`DELETE /matches/{id}` + `match.closed`), read receipts (`message.read`), and
   `POST /me/export` / `DELETE /me`. Conformance locked by `test-api.js` (13 tests).
   Known gaps for later: `banned` wall, deck rate-limit interstitial, WS reconnect states.
-- **M6 — Real client.** Start the SwiftUI (or chosen stack) build per `09-ui-build-plan.md`,
-  porting one prototype feature + its test intent per milestone.
+- **M6 — Real backend + real client transport. ✅ Done.** The spec's SwiftUI client can't be
+  built or verified in this environment (no Xcode), and the spec pack allows swapping the
+  stack — so M6 delivers the other half for real: `server/` is a reference Go backend
+  implementing `02` over actual HTTP + WebSocket (gorilla/websocket) with an in-memory
+  store, the bot pool, moderation timers, OTP throttling, rotating tokens, idempotent
+  swipes, pagination, presigned uploads, and `match.closed` fan-out. The client gained a
+  transport layer: served by the Go server it detects `/v1/healthz` and speaks real
+  `fetch` + WebSocket (with reconnect backoff and REST message fallback); on `file://` or
+  in the artifact sandbox it falls back to the in-page mock. `test-server.js` (13 tests)
+  runs HTTP conformance against the real server and drives the served client end to end
+  over the real socket. Run it yourself: `cd server && go run .` → http://localhost:8787.
+- **M7 — Native client.** When an Xcode environment exists, build the SwiftUI client per
+  `09-ui-build-plan.md` against `server/`, porting one prototype feature + its test
+  intent per milestone.
 
 ## Non-negotiables tracker (spec 01 §Non-negotiables)
 

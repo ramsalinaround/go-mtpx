@@ -1996,6 +1996,100 @@
      CLIENT
      ================================================================ */
 
+  // Transport: when the page is served by the reference Go server
+  // (dating-app/server), speak real HTTP + WebSocket to it; on file:// or in
+  // the artifact sandbox, fall back to the in-page mock backend above.
+  var REMOTE = false;
+  var ws = null, wsBackoff = 1000;
+
+  function detectTransport() {
+    if (location.protocol !== "http:" && location.protocol !== "https:") return Promise.resolve(false);
+    return new Promise(function (resolve) {
+      var done = false;
+      var timer = setTimeout(function () { if (!done) { done = true; resolve(false); } }, 1200);
+      try {
+        fetch("/v1/healthz").then(function (res) {
+          if (!done) { done = true; clearTimeout(timer); resolve(res.ok); }
+        }, function () {
+          if (!done) { done = true; clearTimeout(timer); resolve(false); }
+        });
+      } catch (e) { if (!done) { done = true; clearTimeout(timer); resolve(false); } }
+    });
+  }
+
+  function remoteFetch(method, path, body, token) {
+    var headers = {};
+    if (body != null) headers["Content-Type"] = "application/json";
+    if (token) headers["Authorization"] = "Bearer " + token;
+    return fetch("/v1" + path, {
+      method: method, headers: headers,
+      body: body != null ? JSON.stringify(body) : undefined
+    }).then(function (res) {
+      var ct = res.headers.get("content-type") || "";
+      var parse = ct.indexOf("json") >= 0 ? res.json() : Promise.resolve(null);
+      return parse.then(function (data) {
+        if (res.ok) return { status: res.status, data: data };
+        var e = (data && data.error) || {};
+        return Promise.reject({ status: res.status, code: e.code || "unknown",
+          message: e.message || "Request failed", retry_after_s: e.retry_after_s });
+      });
+    }, function () {
+      return Promise.reject({ status: 0, code: "network", message: "Network unreachable" });
+    });
+  }
+
+  function transportFetch(method, path, body, token) {
+    return REMOTE ? remoteFetch(method, path, body, token) : serverFetch(method, path, body, token);
+  }
+
+  function s3Put(uploadUrl, kind) {
+    if (!REMOTE) return mockS3Put(uploadUrl, kind);
+    return fetch(uploadUrl, { method: "PUT", body: kind }); // "JPEG bytes" in the prototype
+  }
+
+  function connectSocket() {
+    if (!REMOTE || !session) return;
+    try { if (ws) { ws.onclose = null; ws.close(); } } catch (e) { /* fine */ }
+    var proto = location.protocol === "https:" ? "wss://" : "ws://";
+    ws = new WebSocket(proto + location.host + "/v1/ws?token=" + encodeURIComponent(session.access));
+    ws.onopen = function () { wsBackoff = 1000; };
+    ws.onmessage = function (ev) {
+      var frame;
+      try { frame = JSON.parse(ev.data); } catch (e) { return; }
+      if (frame.type === "ping") {
+        try { ws.send(JSON.stringify({ type: "pong" })); } catch (e) { /* fine */ }
+        return;
+      }
+      (frameHandlers[frame.type] || []).forEach(function (fn) {
+        try { fn(frame.data); } catch (e) { /* handler error should not kill delivery */ }
+      });
+    };
+    ws.onclose = function () {
+      if (!session || !REMOTE) return;
+      var jitter = Math.random() * 300;
+      setTimeout(connectSocket, wsBackoff + jitter); // 1s -> 30s cap per contract
+      wsBackoff = Math.min(wsBackoff * 2, 30000);
+    };
+  }
+  function closeSocket() {
+    if (ws) { try { ws.onclose = null; ws.close(); } catch (e) { /* fine */ } ws = null; }
+  }
+
+  // client -> server frames; returns false when the caller should REST-fallback
+  function socketSend(type, data) {
+    if (REMOTE) {
+      if (ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({ type: type, data: data }));
+        return true;
+      }
+      return false;
+    }
+    if (type === "message.send") {
+      handleSendMessage(db.users[session.user_id], data.match_id, data.body, data.client_id);
+    }
+    return true;
+  }
+
   var session = null;   // { access, refresh, user_id, settings }
   var me = null;        // serialized /me
   var deck = [];        // candidates; top of deck = last element
@@ -2021,22 +2115,23 @@
   }
 
   function refreshTokens() {
-    return serverFetch("POST", "/auth/refresh", { refresh_token: session.refresh })
+    return transportFetch("POST", "/auth/refresh", { refresh_token: session.refresh })
       .then(function (res) {
         session.access = res.data.access_token;
         session.refresh = res.data.refresh_token;
         saveSession();
+        if (REMOTE) connectSocket(); // reconnect with the fresh token per contract
       });
   }
   // contract: on 401 token_expired, refresh once and replay; refresh failure wipes the session
   function apiCall(method, path, body) {
-    return serverFetch(method, path, body, session && session.access)
+    return transportFetch(method, path, body, session && session.access)
       .then(function (res) { return res.data; })
       .catch(function (err) {
         if (err && err.code === "token_expired" && session && session.refresh) {
           return refreshTokens().then(
             function () {
-              return serverFetch(method, path, body, session.access)
+              return transportFetch(method, path, body, session.access)
                 .then(function (res) { return res.data; });
             },
             function () { resetSession(); throw err; });
@@ -2296,6 +2391,7 @@
   });
 
   function resetSession() {
+    closeSocket();
     session = null; me = null; deck = []; matchesCache = [];
     activeMatchId = null; chatMsgs = []; pendingPhone = null;
     clearInterval(pollTimer);
@@ -2313,7 +2409,8 @@
   /* ---------------- app entry ---------------- */
 
   function enterApp() {
-    resumeModerationServer(session.user_id);
+    if (!REMOTE) resumeModerationServer(session.user_id);
+    connectSocket();
     return Promise.all([refreshFeed(), refreshMatches()]).then(function () {
       showScreen("screen-app");
       showTab("discover");
@@ -2623,10 +2720,16 @@
     if (!text || !activeMatchId) return;
     $("chat-input").value = "";
     $("chat-send").disabled = true;
-    // WS path: message.send; the echo comes back as message.new with our client_id
+    // WS path: message.send; the echo comes back as message.new with our client_id.
+    // If the socket is down, fall back to POST /matches/{id}/messages per contract.
     var cid = uuid();
     try {
-      handleSendMessage(db.users[session.user_id], activeMatchId, text, cid);
+      if (!socketSend("message.send", { match_id: activeMatchId, body: text, client_id: cid })) {
+        apiCall("POST", "/matches/" + activeMatchId + "/messages", { body: text, client_id: cid })
+          .catch(function (err) {
+            toast(err.code === "match_closed" ? "This conversation has ended." : "Couldn't send — try again.");
+          });
+      }
     } catch (e) {
       if (e.error && e.error.code === "match_closed") { toast("This conversation has ended."); return; }
       toast("Couldn't send — try again.");
@@ -2781,7 +2884,7 @@
     // contract flow: presign -> binary PUT -> confirm
     apiCall("POST", "/me/photos/presign", { content_type: "image/jpeg" })
       .then(function (data) {
-        return mockS3Put(data.upload_url, kind).then(function () {
+        return s3Put(data.upload_url, kind).then(function () {
           return apiCall("POST", "/me/photos/confirm", { key: data.key });
         });
       })
@@ -3152,15 +3255,19 @@
   /* ---------------- boot ---------------- */
 
   loadDb();
-  loadSession();
-  if (session && session.access) {
-    apiCall("GET", "/me").then(function (data) {
-      me = data;
-      if (me.onboarding_state === "complete") return enterApp();
-      prepSetup();
-      showScreen("screen-setup");
-    }).catch(function () { resetSession(); });
-  }
+  detectTransport().then(function (remote) {
+    REMOTE = remote;
+    document.documentElement.dataset.transport = REMOTE ? "remote" : "mock";
+    loadSession();
+    if (session && session.access) {
+      apiCall("GET", "/me").then(function (data) {
+        me = data;
+        if (me.onboarding_state === "complete") return enterApp();
+        prepSetup();
+        showScreen("screen-setup");
+      }).catch(function () { resetSession(); });
+    }
+  });
 })();
 </script>
 <!-- ARTIFACT-BODY-END -->

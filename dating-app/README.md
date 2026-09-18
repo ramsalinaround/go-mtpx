@@ -39,10 +39,27 @@ the rest of the repository.
 
 | Path | What it is |
 |------|------------|
-| `index.html` | The app — single file, no build step |
+| `index.html` | The client — single file, no build step; picks its transport at boot |
+| `server/` | Reference Go backend implementing the API contract (real HTTP + WebSocket) |
 | `docs/PLAN.md` | Feature plan, milestones, spec→test→status mapping |
 | `docs/spec/` | Product spec pack (`01-product-overview.md`; `02`–`09` pending) |
 | `tests/` | Per-feature regression suites (Playwright + Chromium) |
+
+## Running against the real backend
+
+The client normally runs standalone on its in-page mock backend. To run the
+same client against the reference Go server (real HTTP + WebSocket per
+`docs/spec/02-api-contract.md`):
+
+```sh
+cd server
+go run .          # serves the client + API on http://localhost:8787
+```
+
+Open http://localhost:8787 — the client probes `/v1/healthz` at boot and
+switches to the remote transport (check `document.documentElement.dataset.transport`).
+The OTP code is logged by the server and is always `123456`. The store is
+in-memory: restarting the server resets accounts.
 
 ## Testing
 
@@ -61,6 +78,7 @@ feature can't silently break an existing one:
 | `test-safety.js` | Report (reason picker, 24h moderation notice) and block from deck, match row, and chat |
 | `test-settings.js` | Settings screen, legal docs (settings + signup), notification toggle, data export, account deletion |
 | `test-photos.js` | Photo grid (add/reorder/remove/cap), simulated moderation states, rejection badge, approved-only rendering on cards |
+| `test-server.js` | Reference Go backend: HTTP conformance + the served client end to end over a real WebSocket |
 
 Run them all (must be green before merging any change — see `docs/PLAN.md`):
 
@@ -70,6 +88,7 @@ npm install   # first time only
 npm test
 ```
 
+`test-server.js` needs a Go toolchain (`go build` is invoked automatically).
 The harness auto-detects the pre-installed Chromium at `/opt/pw-browsers/chromium`
 (Claude Code remote environments); elsewhere it uses Playwright's own browser
 (`npx playwright install chromium` once), or set `MAKTUB_CHROMIUM=/path/to/chrome`.
