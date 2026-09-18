@@ -1,4 +1,4 @@
-# Kindred — dating app UI prototype
+# Maktub — dating app UI prototype
 
 A single-file, dependency-free dating app prototype: open `index.html` in any
 browser (best viewed at phone width, or in a desktop window where it renders
