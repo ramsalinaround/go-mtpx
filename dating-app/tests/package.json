@@ -1,0 +1,11 @@
+{
+  "name": "maktub-tests",
+  "private": true,
+  "description": "Per-feature regression suites for the Maktub prototype",
+  "scripts": {
+    "test": "node run-all.js"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}
