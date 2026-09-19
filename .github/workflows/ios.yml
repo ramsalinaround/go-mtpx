@@ -1,0 +1,56 @@
+name: ios-client
+
+on:
+  push:
+    paths:
+      - "dating-app/ios/**"
+      - "dating-app/server/**"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "dating-app/ios/**"
+      - "dating-app/server/**"
+      - ".github/workflows/ios.yml"
+
+jobs:
+  swift:
+    name: build + contract tests (macOS)
+    runs-on: macos-14
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: dating-app/server/go.sum
+
+      - name: Start reference server
+        working-directory: dating-app/server
+        run: |
+          go build -o /tmp/maktub-server .
+          nohup /tmp/maktub-server -addr :8787 -static .. > /tmp/maktub-server.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -sf http://127.0.0.1:8787/v1/healthz > /dev/null; then
+              echo "server up"; exit 0
+            fi
+            sleep 0.2
+          done
+          echo "server did not come up"; cat /tmp/maktub-server.log; exit 1
+
+      - name: Swift version
+        run: swift --version
+
+      - name: Build package (Kit + SwiftUI client + app)
+        working-directory: dating-app/ios
+        run: swift build
+
+      - name: Contract conformance + WebSocket round trip
+        working-directory: dating-app/ios
+        env:
+          MAKTUB_BASE_URL: http://127.0.0.1:8787
+        run: swift test
+
+      - name: Server log (on failure)
+        if: failure()
+        run: cat /tmp/maktub-server.log || true
