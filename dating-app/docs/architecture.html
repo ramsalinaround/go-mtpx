@@ -218,7 +218,7 @@
 
   <div class="diagram-card">
   <figure>
-    <svg viewBox="0 0 980 620" role="img" aria-label="Maktub architecture: the web client's UI talks through apiCall and frame handlers to a transport switch, which routes either to the in-page mock backend (on file:// and in the artifact sandbox) or over real fetch and WebSocket to the Go server; both backends implement the same API contract; the Go server also serves the client and has a dashed seam for Postgres, Redis and S3; a dashed SwiftUI client is planned against the same contract." style="color: var(--ink); font-family: var(--font-body);">
+    <svg viewBox="0 0 980 620" role="img" aria-label="Maktub architecture: the web client's UI talks through apiCall and frame handlers to a transport switch, which routes either to the in-page mock backend (on file:// and in the artifact sandbox) or over real fetch and WebSocket to the Go server; both backends implement the same API contract; the Go server also serves the client and has a dashed seam for Postgres, Redis and S3; the native Swift client in ios/ speaks the same contract to the same server and is verified on macOS CI." style="color: var(--ink); font-family: var(--font-body);">
       <defs>
         <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
@@ -318,11 +318,11 @@
       <text x="676" y="436" font-size="10.5" font-weight="700" style="fill: var(--accent)" text-anchor="start">implements</text>
 
       <!-- ===== future client ===== -->
-      <rect x="20" y="524" width="300" height="72" rx="14" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-dasharray="5 4"/>
-      <text x="36" y="552" font-size="13.5" font-weight="700" fill="currentColor" fill-opacity=".7">SwiftUI client — M7</text>
-      <text x="36" y="570" font-size="11" fill="currentColor" fill-opacity=".55">planned; needs an Xcode environment</text>
-      <line x1="324" y1="560" x2="700" y2="560" stroke="currentColor" stroke-dasharray="5 4"/>
-      <line x1="700" y1="560" x2="820" y2="410" stroke="currentColor" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+      <rect x="20" y="524" width="300" height="72" rx="14" style="fill: var(--surface)" stroke="currentColor" stroke-opacity=".35"/>
+      <text x="36" y="552" font-size="13.5" font-weight="700" fill="currentColor">Swift client — ios/ (M7)</text>
+      <text x="36" y="570" font-size="11" fill="currentColor" fill-opacity=".62">MaktubKit + SwiftUI · swift run MaktubApp · macOS CI</text>
+      <line x1="324" y1="560" x2="700" y2="560" stroke="currentColor"/>
+      <line x1="700" y1="560" x2="820" y2="410" stroke="currentColor" marker-end="url(#arr)"/>
       <text x="512" y="552" font-size="11" fill="currentColor" fill-opacity=".62" text-anchor="middle">same contract, same server</text>
     </svg>
     <figcaption>The UI code is identical in both modes: at boot the client probes

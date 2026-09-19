@@ -219,7 +219,7 @@
   </header>
 
   <div class="tiles">
-    <div class="tile"><div class="k">6<small> / 7</small></div><div class="l">Milestones done</div><div class="d">M1–M6 shipped · M7 (native client) queued</div></div>
+    <div class="tile"><div class="k">7<small> / 7</small></div><div class="l">Milestones done</div><div class="d">M1–M7 shipped · native core loop CI-verified</div></div>
     <div class="tile"><div class="k">102</div><div class="l">Tests, all green</div><div class="d">across 11 suites · run before every merge</div></div>
     <div class="tile"><div class="k">24<small> routes</small></div><div class="l">API initialized ×2</div><div class="d">every contract route live in mock <em>and</em> Go</div></div>
     <div class="tile"><div class="k">7<small> / 7</small></div><div class="l">Spec P0s guarded</div><div class="d">every non-negotiable has a test on it</div></div>
@@ -262,10 +262,13 @@
       (in-memory store, bot engine, moderation timers) and serves the client; the client
       probes <code>/v1/healthz</code> at boot and switches transports. Conformance re-run
       against the real server; the served client driven over a live socket.</p></li>
-    <li><span class="dot pending">7</span>
-      <div class="m-head"><h3>M7 — Native SwiftUI client</h3><span class="pill next">queued</span></div>
-      <p>Per <code>09-ui-build-plan.md</code>, against the Go server — needs an Xcode
-      environment. Spec files <code>03–09</code> also still to land in <code>docs/spec/</code>.</p></li>
+    <li><span class="dot">✓</span>
+      <div class="m-head"><h3>M7 — Native Swift client (core loop)</h3><span class="m-suite">Swift tests on macOS CI</span></div>
+      <p><code>ios/</code>: MaktubKit (contract models, refresh-and-replay REST, WebSocket
+      with backoff) + MaktubUI (SwiftUI onboarding, deck, matches, chat with receipts,
+      safety) + a runnable macOS app. Verified on GitHub's macOS runners: CI boots the Go
+      server, runs live contract + WebSocket tests, and builds the SwiftUI package —
+      green on the first run. Native photos/settings UI and the Xcode iOS target remain.</p></li>
   </ol>
 
   <h2>Feature matrix</h2>
@@ -331,8 +334,8 @@
       build plan) still to be dropped into <code>docs/spec/</code>.</li>
     <li><strong>Persistence:</strong> the Go store is in-memory by design — Postgres/Redis/S3
       swap in behind the existing route handlers.</li>
-    <li><strong>M7:</strong> the native SwiftUI client against the Go server, once an Xcode
-      environment is available.</li>
+    <li><strong>Native client, next slices:</strong> photos and settings/legal screens in
+      SwiftUI, push notifications, and an Xcode iOS app target per <code>09-ui-build-plan.md</code>.</li>
   </ul>
 
   <footer>Maktub prototype · <code>dating-app/</code> on branch <code>claude/dating-app-bvd8yy</code> ·

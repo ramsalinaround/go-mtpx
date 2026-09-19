@@ -69,6 +69,7 @@ Rules that keep it usable:
 | 6c | Reference Go backend + remote client transport | Done | `test-server.js` | In-memory store (no Postgres/Redis/S3); single-node; OTP logged, not sent |
 | 7 | Safety: report + block from every surface, moderation notice | Done | `test-safety.js` | Reports stored locally; no real moderation backend |
 | 8 | Settings: legal links, data export, account deletion, notification toggle | Done | `test-settings.js` | Placeholder legal copy; export shows JSON in-app (sandbox blocks downloads); notifications are a stored toggle only |
+| 6d | Native Swift client (Kit + SwiftUI core loop) | Done | Swift `MaktubKitTests` via `ios.yml` CI | Runs on macOS CI (no Xcode here); native photos/settings UI still to come |
 | 9 | Push notifications (match, message) | Out of prototype scope | — | Browser prototype; revisit in client build |
 
 Spec **v1 non-goals** (no UI, no stubs, no tests): monetization, voice/video/image chat,
@@ -112,9 +113,17 @@ undo/rewind, "who liked you", verification badges, ML feed controls, Android/iPa
   in the artifact sandbox it falls back to the in-page mock. `test-server.js` (13 tests)
   runs HTTP conformance against the real server and drives the served client end to end
   over the real socket. Run it yourself: `cd server && go run .` → http://localhost:8787.
-- **M7 — Native client.** When an Xcode environment exists, build the SwiftUI client per
-  `09-ui-build-plan.md` against `server/`, porting one prototype feature + its test
-  intent per milestone.
+- **M7 — Native Swift client. ✅ Done (core loop).** `ios/` is a Swift package:
+  `MaktubKit` (contract models, REST client with rotating-token refresh-and-replay,
+  WebSocket client with backoff) and `MaktubUI` (SwiftUI: OTP onboarding with the
+  server-enforced 18+ stop, swipe deck + match overlay, matches, chat with typing and
+  read receipts, report/block/unmatch, profile edit, logout/deletion), plus a runnable
+  macOS entry point (`swift run MaktubApp`). Verified where Swift actually runs:
+  `.github/workflows/ios.yml` (macos-14) boots the Go server, passes `swift test`
+  (offline decoding + live contract conformance + a real-WebSocket round trip) and
+  builds the whole package — green on the first run. Remaining native scope for later:
+  photos UI, settings/legal screens, push notifications, and an Xcode iOS app target
+  per `09-ui-build-plan.md` when the flow specs land.
 
 ## Non-negotiables tracker (spec 01 §Non-negotiables)
 
