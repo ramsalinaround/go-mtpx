@@ -36,6 +36,7 @@ dating-app/
 │   ├── PLAN.md         # this file — feature plan and status
 │   └── spec/           # product spec pack (01–02 present; 03–09 pending)
 ├── server/             # reference Go backend: real HTTP + WebSocket per 02
+├── ios/                # native Swift client: MaktubKit + SwiftUI (CI-verified on macOS)
 └── tests/              # per-feature regression suites (Playwright + Chromium)
     ├── package.json    # npm install && npm test
     ├── harness.js      # shared launch/signup/swipe helpers + suite runner

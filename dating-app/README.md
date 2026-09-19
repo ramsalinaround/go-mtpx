@@ -41,6 +41,7 @@ the rest of the repository.
 |------|------------|
 | `index.html` | The client — single file, no build step; picks its transport at boot |
 | `server/` | Reference Go backend implementing the API contract (real HTTP + WebSocket) |
+| `ios/` | Native Swift client (MaktubKit + SwiftUI), tested on macOS CI against `server/` |
 | `docs/PLAN.md` | Feature plan, milestones, spec→test→status mapping |
 | `docs/spec/` | Product spec pack (`01-product-overview.md`; `02`–`09` pending) |
 | `tests/` | Per-feature regression suites (Playwright + Chromium) |
