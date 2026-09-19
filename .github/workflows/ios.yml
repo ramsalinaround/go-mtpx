@@ -54,3 +54,54 @@ jobs:
       - name: Server log (on failure)
         if: failure()
         run: cat /tmp/maktub-server.log || true
+
+  simulator:
+    name: tests inside the iOS Simulator
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: dating-app/server/go.sum
+
+      - name: Start reference server
+        working-directory: dating-app/server
+        run: |
+          go build -o /tmp/maktub-server .
+          nohup /tmp/maktub-server -addr :8787 -static .. > /tmp/maktub-server.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -sf http://127.0.0.1:8787/v1/healthz > /dev/null; then
+              echo "server up"; exit 0
+            fi
+            sleep 0.2
+          done
+          echo "server did not come up"; cat /tmp/maktub-server.log; exit 1
+
+      - name: Pick a simulator
+        id: sim
+        run: |
+          xcrun simctl list devices available | grep -m 5 iPhone || true
+          name=$(xcrun simctl list devices available | grep -oE 'iPhone [0-9]+( Pro)?( Max)?' | head -1)
+          echo "name=${name:-iPhone 15}" >> "$GITHUB_OUTPUT"
+          echo "using: ${name:-iPhone 15}"
+
+      - name: Run MaktubKit tests in the iOS Simulator
+        working-directory: dating-app/ios
+        env:
+          TEST_RUNNER_MAKTUB_BASE_URL: http://127.0.0.1:8787
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -scheme Maktub-Package \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
+            -skipPackagePluginValidation \
+            | tee /tmp/xcodebuild.log | grep -E "Test Suite|Test Case|error:|BUILD|TEST" || (tail -80 /tmp/xcodebuild.log; exit 1)
+
+      - name: Logs (on failure)
+        if: failure()
+        run: |
+          tail -120 /tmp/xcodebuild.log || true
+          cat /tmp/maktub-server.log || true
