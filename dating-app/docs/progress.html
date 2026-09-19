@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<!-- ARTIFACT-BODY-START -->
+<title>Maktub Progress</title>
+<style>
+  :root {
+    --bg: #FBF6F3;
+    --surface: #FFFFFF;
+    --surface-2: #F4EAE7;
+    --ink: #281820;
+    --muted: #7D6672;
+    --line: #E9DAD6;
+    --accent: #D93A63;
+    --accent-soft: #FBE3EA;
+    --amber: #B96A15;
+    --amber-soft: #F7E8D4;
+    --ok: #2E7D5B;
+    --ok-soft: #E3F2EA;
+    --pend: #8A7B84;
+    --code-bg: #F4EAE7;
+    --bar: #D93A63;
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-body: "Karla", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1B1117;
+      --surface: #271A21;
+      --surface-2: #31222B;
+      --ink: #F5EAEF;
+      --muted: #A98F9C;
+      --line: #3D2B35;
+      --accent: #F0537D;
+      --accent-soft: #43222E;
+      --amber: #F0AC55;
+      --amber-soft: #3E2E1A;
+      --ok: #58B893;
+      --ok-soft: #1E3A2E;
+      --pend: #8A7B84;
+      --code-bg: #31222B;
+      --bar: #F0537D;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1B1117;
+    --surface: #271A21;
+    --surface-2: #31222B;
+    --ink: #F5EAEF;
+    --muted: #A98F9C;
+    --line: #3D2B35;
+    --accent: #F0537D;
+    --accent-soft: #43222E;
+    --amber: #F0AC55;
+    --amber-soft: #3E2E1A;
+    --ok: #58B893;
+    --ok-soft: #1E3A2E;
+    --pend: #8A7B84;
+    --code-bg: #31222B;
+    --bar: #F0537D;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    padding-inline: 16px;
+  }
+  * { box-sizing: border-box; }
+  .wrap { max-width: 980px; margin: 0 auto; padding-block: 40px 72px; }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(34px, 6vw, 48px);
+    letter-spacing: -0.02em;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+  .hero p { color: var(--muted); max-width: 62ch; margin: 0; }
+  .asof { margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .asof code, td code, li code, p code {
+    font-family: var(--font-mono);
+    font-size: .85em;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 27px;
+    margin: 52px 0 6px;
+    text-wrap: balance;
+  }
+  .sub { color: var(--muted); margin: 0 0 18px; max-width: 68ch; }
+
+  /* stat tiles */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 28px; }
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px 18px;
+  }
+  .tile .k {
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .tile .k small { font-size: 18px; color: var(--muted); font-family: var(--font-body); font-weight: 700; }
+  .tile .l { font-size: 12px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+  .tile .d { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+
+  /* milestones */
+  .timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 13px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: var(--line);
+  }
+  .timeline li { position: relative; padding: 0 0 22px 44px; }
+  .timeline li:last-child { padding-bottom: 0; }
+  .dot {
+    position: absolute;
+    left: 3px; top: 2px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    background: var(--ok); color: var(--bg);
+  }
+  .dot.pending { background: var(--surface); color: var(--pend); border: 2px dashed var(--pend); }
+  .m-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .m-head h3 { margin: 0; font-size: 17px; font-weight: 800; }
+  .m-head .when { font-size: 12px; color: var(--muted); }
+  .timeline p { margin: 4px 0 0; font-size: 14.5px; color: var(--muted); max-width: 72ch; }
+  .m-suite { font-size: 12px; font-weight: 700; color: var(--accent); }
+
+  /* pills + tables */
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; font-weight: 800;
+    padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+  }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.pend { background: var(--surface-2); color: var(--pend); }
+  .pill.next { background: var(--amber-soft); color: var(--amber); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    font-size: 14px;
+  }
+  .table-scroll { overflow-x: auto; border-radius: 14px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  th {
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); background: var(--surface-2);
+  }
+  .dim { color: var(--muted); }
+
+  /* test bar list */
+  .bars { display: flex; flex-direction: column; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+  .bar-row { display: grid; grid-template-columns: 150px 1fr 34px; align-items: center; gap: 10px; font-size: 13.5px; }
+  .bar-row .name { font-family: var(--font-mono); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-track { display: block; height: 14px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+  .bar-fill { display: block; height: 100%; border-radius: 4px 3px 3px 4px; background: var(--bar); opacity: .85; }
+  .bar-row .n { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
+  .bars .total { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: 800; font-size: 13.5px; }
+
+  ul.gaps { margin: 0; padding-left: 20px; font-size: 14.5px; color: var(--muted); }
+  ul.gaps li { margin-bottom: 6px; }
+  ul.gaps strong { color: var(--ink); }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--muted);
+  }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Karla:wght@400;700;800&display=swap">
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Maktub · status</p>
+    <h1>What's built, and what proves it</h1>
+    <p>Progress report for the Maktub dating-app build: milestones shipped, the feature
+    matrix against the product spec, the P0 compliance tracker, and the regression suites
+    that keep all of it honest.</p>
+    <p class="asof">As of <strong>2026-09-19</strong> · branch <code>claude/dating-app-bvd8yy</code> · latest suite run: <span class="pill ok">✓ all 11 suites passed</span></p>
+  </header>
+
+  <div class="tiles">
+    <div class="tile"><div class="k">6<small> / 7</small></div><div class="l">Milestones done</div><div class="d">M1–M6 shipped · M7 (native client) queued</div></div>
+    <div class="tile"><div class="k">102</div><div class="l">Tests, all green</div><div class="d">across 11 suites · run before every merge</div></div>
+    <div class="tile"><div class="k">24<small> routes</small></div><div class="l">API initialized ×2</div><div class="d">every contract route live in mock <em>and</em> Go</div></div>
+    <div class="tile"><div class="k">7<small> / 7</small></div><div class="l">Spec P0s guarded</div><div class="d">every non-negotiable has a test on it</div></div>
+  </div>
+
+  <h2>Milestones</h2>
+  <p class="sub">Each milestone shipped with its own regression suite; nothing merges unless
+  every earlier suite stays green.</p>
+  <ol class="timeline">
+    <li><span class="dot">✓</span>
+      <div class="m-head"><h3>M1 — Prototype + test foundation</h3><span class="m-suite">6 suites · 40 tests</span></div>
+      <p>Single-file app covering the whole core loop — mock auth, swipe deck, match modal,
+      chat with auto-replies, filters, profile — verified end to end in phone-emulated
+      Chromium; spec pack landed in <code>docs/spec/</code>, repo organized around
+      one-feature-one-suite.</p></li>
+    <li><span class="dot">✓</span>
+      <div class="m-head"><h3>M2 — Safety (spec P0)</h3><span class="m-suite">+ test-safety.js (11)</span></div>
+      <p>Report (six-reason picker, confidentiality note, 24-hour moderation commitment,
+      optional also-block) and block from every surface showing another user: deck card,
+      match row, chat header. Immediate, both directions, permanent.</p></li>
+    <li><span class="dot">✓</span>
+      <div class="m-head"><h3>M3 — Settings &amp; compliance (spec P0)</h3><span class="m-suite">+ test-settings.js (10)</span></div>
+      <p>Settings screen: preferences shortcut, persisted notification toggle, ToS + Privacy
+      Policy (also linked at signup), support contact, full data export, logout, and real
+      in-app account deletion behind an explicit confirmation.</p></li>
+    <li><span class="dot">✓</span>
+      <div class="m-head"><h3>M4 — Profile photos + moderation</h3><span class="m-suite">+ test-photos.js (10)</span></div>
+      <p>Six-slot grid with reorder; new photos sit “In review”, then approve or reject
+      (deterministically demonstrable); rejection dots the Profile tab; other users only
+      ever see approved photos — cards fall back to initials.</p></li>
+    <li><span class="dot">✓</span>
+      <div class="m-head"><h3>M5 — API contract, implemented</h3><span class="m-suite">+ test-api.js (13)</span></div>
+      <p><code>02-api-contract.md</code> built as an in-page mock backend — error envelope,
+      rotating tokens, OTP throttling, idempotent swipes, cursor pagination, WS frames —
+      and the UI rebuilt onto it: phone OTP onboarding, server-enforced 18+ stop, gender
+      preferences, presigned photo flow, unmatch, read receipts.</p></li>
+    <li><span class="dot">✓</span>
+      <div class="m-head"><h3>M6 — Reference Go backend + remote transport</h3><span class="m-suite">+ test-server.js (13)</span></div>
+      <p><code>server/</code> implements the same contract over real HTTP + WebSocket
+      (in-memory store, bot engine, moderation timers) and serves the client; the client
+      probes <code>/v1/healthz</code> at boot and switches transports. Conformance re-run
+      against the real server; the served client driven over a live socket.</p></li>
+    <li><span class="dot pending">7</span>
+      <div class="m-head"><h3>M7 — Native SwiftUI client</h3><span class="pill next">queued</span></div>
+      <p>Per <code>09-ui-build-plan.md</code>, against the Go server — needs an Xcode
+      environment. Spec files <code>03–09</code> also still to land in <code>docs/spec/</code>.</p></li>
+  </ol>
+
+  <h2>Feature matrix</h2>
+  <p class="sub">Product-spec features versus what exists, with the honest divergences —
+  prototype substitutes, never silent product decisions.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Feature (spec 01)</th><th>Status</th><th>Suites</th><th>Divergence from spec</th></tr></thead>
+    <tbody>
+      <tr><td>Phone OTP signup/login, token refresh, sessions</td><td><span class="pill ok">✓ Done</span></td><td class="dim">api · auth · server</td><td class="dim">Code shown on screen (always <code>123456</code>) — no SMS provider</td></tr>
+      <tr><td>Profile: name, age (never DOB), bio, interests</td><td><span class="pill ok">✓ Done</span></td><td class="dim">profile</td><td class="dim">—</td></tr>
+      <tr><td>Photos: 1–6, reorder, moderation states</td><td><span class="pill ok">✓ Done</span></td><td class="dim">photos · server</td><td class="dim">Sample-scene library instead of camera roll; ~2.5s simulated review</td></tr>
+      <tr><td>Preferences: age range, distance, genders</td><td><span class="pill ok">✓ Done</span></td><td class="dim">filters</td><td class="dim">Interests filter kept as a documented extension</td></tr>
+      <tr><td>Discovery deck: gestures, rounded km, empty state</td><td><span class="pill ok">✓ Done</span></td><td class="dim">discovery</td><td class="dim">14-person bot pool; no geo backend</td></tr>
+      <tr><td>Match on mutual like → modal → chat</td><td><span class="pill ok">✓ Done</span></td><td class="dim">matching</td><td class="dim">Mutual likes pre-flagged on bots</td></tr>
+      <tr><td>Matches + chat: unread, receipts, unmatch</td><td><span class="pill ok">✓ Done</span></td><td class="dim">chat · matching</td><td class="dim">Bots auto-reply; WS emulated in mock mode, real in Go mode</td></tr>
+      <tr><td>Safety: report + block everywhere</td><td><span class="pill ok">✓ Done</span></td><td class="dim">safety</td><td class="dim">No human moderation behind the queue</td></tr>
+      <tr><td>Settings: legal, export, deletion, notifications</td><td><span class="pill ok">✓ Done</span></td><td class="dim">settings</td><td class="dim">Placeholder legal copy; export shown in-app</td></tr>
+      <tr><td>Push notifications (match, message)</td><td><span class="pill pend">○ Out of scope</span></td><td class="dim">—</td><td class="dim">Browser prototype; revisit with the native client</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Non-negotiables (App Review + safety P0s)</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>P0 requirement</th><th>Status</th><th>Guarded by</th></tr></thead>
+    <tbody>
+      <tr><td>18+ only — server-enforced hard stop, no retry loophole</td><td><span class="pill ok">✓ Done</span></td><td class="dim">test-auth · test-api · test-server</td></tr>
+      <tr><td>Report + block reachable from every user-content surface</td><td><span class="pill ok">✓ Done</span></td><td class="dim">test-safety</td></tr>
+      <tr><td>Moderation commitment shown on report confirmation</td><td><span class="pill ok">✓ Done</span></td><td class="dim">test-safety</td></tr>
+      <tr><td>Real in-app account deletion (not a mailto)</td><td><span class="pill ok">✓ Done</span></td><td class="dim">test-settings · test-api</td></tr>
+      <tr><td>Privacy Policy + ToS at signup and in settings</td><td><span class="pill ok">✓ Done</span></td><td class="dim">test-settings</td></tr>
+      <tr><td>Never render precise location — rounded km only</td><td><span class="pill ok">✓ Done</span></td><td class="dim">test-discovery</td></tr>
+      <tr><td>Photos render to others only when moderation-approved</td><td><span class="pill ok">✓ Done</span></td><td class="dim">test-photos · test-server</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>The regression suite</h2>
+  <p class="sub">One suite per feature; <code>cd tests &amp;&amp; npm test</code> must end
+  “All 11 suites passed” before anything merges. Tests per suite:</p>
+  <div class="bars" role="img" aria-label="Tests per suite: api 13, server 13, auth 11, safety 11, settings 10, photos 10, chat 9, filters 7, matching 7, discovery 6, profile 5; total 102.">
+    <div class="bar-row"><span class="name">test-api.js</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><span class="n">13</span></div>
+    <div class="bar-row"><span class="name">test-server.js</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><span class="n">13</span></div>
+    <div class="bar-row"><span class="name">test-auth.js</span><span class="bar-track"><span class="bar-fill" style="width:84.6%"></span></span><span class="n">11</span></div>
+    <div class="bar-row"><span class="name">test-safety.js</span><span class="bar-track"><span class="bar-fill" style="width:84.6%"></span></span><span class="n">11</span></div>
+    <div class="bar-row"><span class="name">test-settings.js</span><span class="bar-track"><span class="bar-fill" style="width:76.9%"></span></span><span class="n">10</span></div>
+    <div class="bar-row"><span class="name">test-photos.js</span><span class="bar-track"><span class="bar-fill" style="width:76.9%"></span></span><span class="n">10</span></div>
+    <div class="bar-row"><span class="name">test-chat.js</span><span class="bar-track"><span class="bar-fill" style="width:69.2%"></span></span><span class="n">9</span></div>
+    <div class="bar-row"><span class="name">test-filters.js</span><span class="bar-track"><span class="bar-fill" style="width:53.8%"></span></span><span class="n">7</span></div>
+    <div class="bar-row"><span class="name">test-matching.js</span><span class="bar-track"><span class="bar-fill" style="width:53.8%"></span></span><span class="n">7</span></div>
+    <div class="bar-row"><span class="name">test-discovery.js</span><span class="bar-track"><span class="bar-fill" style="width:46.2%"></span></span><span class="n">6</span></div>
+    <div class="bar-row"><span class="name">test-profile.js</span><span class="bar-track"><span class="bar-fill" style="width:38.5%"></span></span><span class="n">5</span></div>
+    <div class="total"><span>Total — every suite green on the latest run</span><span>102</span></div>
+  </div>
+
+  <h2>Known gaps &amp; next steps</h2>
+  <ul class="gaps">
+    <li><strong>Contract edges not yet surfaced:</strong> the <code>banned</code> account wall,
+      the deck's <code>rate_limited</code> interstitial, and visible WS offline/reconnecting states.</li>
+    <li><strong>Spec files <code>03–09</code></strong> (data models, design system, flow specs,
+      build plan) still to be dropped into <code>docs/spec/</code>.</li>
+    <li><strong>Persistence:</strong> the Go store is in-memory by design — Postgres/Redis/S3
+      swap in behind the existing route handlers.</li>
+    <li><strong>M7:</strong> the native SwiftUI client against the Go server, once an Xcode
+      environment is available.</li>
+  </ul>
+
+  <footer>Maktub prototype · <code>dating-app/</code> on branch <code>claude/dating-app-bvd8yy</code> ·
+  companion page: <em>Maktub Architecture</em> · full detail in <code>docs/PLAN.md</code></footer>
+</div>
+<!-- ARTIFACT-BODY-END -->
+</body>
+</html>

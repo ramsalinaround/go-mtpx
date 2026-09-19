@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<!-- ARTIFACT-BODY-START -->
+<title>Maktub Architecture</title>
+<style>
+  :root {
+    --bg: #FBF6F3;
+    --surface: #FFFFFF;
+    --surface-2: #F4EAE7;
+    --ink: #281820;
+    --muted: #7D6672;
+    --line: #E9DAD6;
+    --accent: #D93A63;
+    --accent-soft: #FBE3EA;
+    --amber: #B96A15;
+    --ok: #2E7D5B;
+    --ok-soft: #E3F2EA;
+    --pend: #8A7B84;
+    --code-bg: #F4EAE7;
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-body: "Karla", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1B1117;
+      --surface: #271A21;
+      --surface-2: #31222B;
+      --ink: #F5EAEF;
+      --muted: #A98F9C;
+      --line: #3D2B35;
+      --accent: #F0537D;
+      --accent-soft: #43222E;
+      --amber: #F0AC55;
+      --ok: #58B893;
+      --ok-soft: #1E3A2E;
+      --pend: #8A7B84;
+      --code-bg: #31222B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1B1117;
+    --surface: #271A21;
+    --surface-2: #31222B;
+    --ink: #F5EAEF;
+    --muted: #A98F9C;
+    --line: #3D2B35;
+    --accent: #F0537D;
+    --accent-soft: #43222E;
+    --amber: #F0AC55;
+    --ok: #58B893;
+    --ok-soft: #1E3A2E;
+    --pend: #8A7B84;
+    --code-bg: #31222B;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    padding-inline: 16px;
+  }
+  * { box-sizing: border-box; }
+  .wrap { max-width: 980px; margin: 0 auto; padding-block: 40px 72px; }
+
+  header.hero { margin-bottom: 36px; }
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(34px, 6vw, 48px);
+    letter-spacing: -0.02em;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+  .hero p { color: var(--muted); max-width: 62ch; margin: 0; }
+  .asof { margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .asof code { font-family: var(--font-mono); background: var(--code-bg); padding: 2px 6px; border-radius: 6px; }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 27px;
+    margin: 52px 0 6px;
+    text-wrap: balance;
+  }
+  .sub { color: var(--muted); margin: 0 0 18px; max-width: 68ch; }
+
+  figure { margin: 0 0 12px; }
+  figure svg { max-width: 100%; height: auto; display: block; }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 10px; max-width: 72ch; }
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 18px;
+    overflow-x: auto;
+  }
+
+  .cols { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 16px; }
+  .note {
+    flex: 1 1 240px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+  .note strong { display: block; margin-bottom: 4px; }
+  .note p { margin: 0; color: var(--muted); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    font-size: 14px;
+  }
+  .table-scroll { overflow-x: auto; border-radius: 14px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  th {
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface-2);
+  }
+  td code, .chip-code {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .group-row td {
+    background: var(--surface-2);
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .purpose { color: var(--muted); }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.pend { background: var(--surface-2); color: var(--pend); }
+  .pill.test { background: var(--accent-soft); color: var(--accent); }
+  .pills { display: flex; gap: 5px; flex-wrap: wrap; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .err-chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 6px 13px;
+    font-size: 13px;
+  }
+  .err-chip code { background: none; padding: 0; font-weight: 700; }
+  .err-chip .state { font-size: 11px; font-weight: 800; letter-spacing: .04em; }
+  .err-chip.ok .state { color: var(--ok); }
+  .err-chip.pend .state { color: var(--pend); }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--muted);
+  }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Karla:wght@400;700;800&display=swap">
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Maktub · engineering</p>
+    <h1>One contract, two backends</h1>
+    <p>How the Maktub prototype is put together: a single-file web client whose UI only ever
+    speaks the API contract, an in-page mock backend for standalone use, and a reference Go
+    backend serving the same contract over real HTTP and WebSocket. The client picks between
+    them at boot.</p>
+    <p class="asof">As of <strong>2026-09-19</strong> · branch <code>claude/dating-app-bvd8yy</code> · contract <code>docs/spec/02-api-contract.md</code></p>
+  </header>
+
+  <h2>System diagram</h2>
+  <p class="sub">Everything the UI does goes through <code>apiCall()</code> and the frame
+  handlers; the transport switch is the only place that knows whether the other side is
+  in-page JavaScript or a Go process.</p>
+
+  <div class="diagram-card">
+  <figure>
+    <svg viewBox="0 0 980 620" role="img" aria-label="Maktub architecture: the web client's UI talks through apiCall and frame handlers to a transport switch, which routes either to the in-page mock backend (on file:// and in the artifact sandbox) or over real fetch and WebSocket to the Go server; both backends implement the same API contract; the Go server also serves the client and has a dashed seam for Postgres, Redis and S3; a dashed SwiftUI client is planned against the same contract." style="color: var(--ink); font-family: var(--font-body);">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+        <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" style="fill: var(--accent)"/>
+        </marker>
+      </defs>
+
+      <!-- ===== client column ===== -->
+      <rect x="20" y="24" width="300" height="304" rx="14" style="fill: var(--surface-2)" stroke="currentColor" stroke-opacity=".35"/>
+      <text x="36" y="52" font-size="15" font-weight="700" fill="currentColor">Web client — index.html</text>
+      <text x="36" y="70" font-size="11.5" fill="currentColor" fill-opacity=".62">one file · no build step · runs anywhere</text>
+
+      <rect x="36" y="84" width="268" height="56" rx="9" style="fill: var(--surface)" stroke="currentColor" stroke-opacity=".3"/>
+      <text x="50" y="107" font-size="12.5" font-weight="700" fill="currentColor">Screens &amp; views</text>
+      <text x="50" y="124" font-size="11" fill="currentColor" fill-opacity=".62">OTP · deck · matches · chat · profile · settings</text>
+
+      <rect x="36" y="150" width="268" height="56" rx="9" style="fill: var(--surface)" stroke="currentColor" stroke-opacity=".3"/>
+      <text x="50" y="173" font-size="12.5" font-weight="700" fill="currentColor">apiCall() + frameHandlers</text>
+      <text x="50" y="190" font-size="11" fill="currentColor" fill-opacity=".62">refresh-once-and-replay · optimistic chat</text>
+
+      <rect x="36" y="216" width="268" height="56" rx="9" style="fill: var(--surface)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="50" y="239" font-size="12.5" font-weight="700" fill="currentColor">Transport switch</text>
+      <text x="50" y="256" font-size="11" fill="currentColor" fill-opacity=".62">boot probe: GET /v1/healthz (1.2s timeout)</text>
+
+      <line x1="170" y1="140" x2="170" y2="150" stroke="currentColor" marker-end="url(#arr)"/>
+      <line x1="170" y1="206" x2="170" y2="216" stroke="currentColor" marker-end="url(#arr)"/>
+
+      <text x="36" y="304" font-size="11" fill="currentColor" fill-opacity=".62">state lives behind the contract:</text>
+      <text x="36" y="319" font-size="11" fill="currentColor" fill-opacity=".62">the UI never touches a store directly</text>
+
+      <!-- ===== mock backend ===== -->
+      <rect x="20" y="368" width="300" height="118" rx="14" style="fill: var(--surface)" stroke="currentColor" stroke-opacity=".35"/>
+      <text x="36" y="396" font-size="14" font-weight="700" fill="currentColor">In-page mock backend</text>
+      <text x="36" y="416" font-size="11.5" fill="currentColor" fill-opacity=".62">route() — every REST endpoint + envelope</text>
+      <text x="36" y="433" font-size="11.5" fill="currentColor" fill-opacity=".62">deliverFrame() — WS frames, bot engine</text>
+      <text x="36" y="450" font-size="11.5" fill="currentColor" fill-opacity=".62">localStorage “database” · moderation timers</text>
+      <text x="36" y="472" font-size="10.5" font-weight="700" fill="currentColor" fill-opacity=".55">USED ON file:// AND IN THE ARTIFACT SANDBOX</text>
+
+      <line x1="120" y1="272" x2="120" y2="368" stroke="currentColor" marker-end="url(#arr)"/>
+      <text x="112" y="326" font-size="11" fill="currentColor" fill-opacity=".75" text-anchor="end">probe fails →</text>
+      <text x="112" y="341" font-size="11" fill="currentColor" fill-opacity=".75" text-anchor="end">mock transport</text>
+
+      <!-- ===== go server column ===== -->
+      <rect x="620" y="24" width="340" height="380" rx="14" style="fill: var(--surface-2)" stroke="currentColor" stroke-opacity=".35"/>
+      <text x="636" y="52" font-size="15" font-weight="700" fill="currentColor">Go server — dating-app/server</text>
+      <text x="636" y="70" font-size="11.5" fill="currentColor" fill-opacity=".62">go run . → http://localhost:8787</text>
+
+      <rect x="636" y="84" width="308" height="46" rx="9" style="fill: var(--surface)" stroke="currentColor" stroke-opacity=".3"/>
+      <text x="650" y="103" font-size="12.5" font-weight="700" fill="currentColor">mux — /v1/* routes</text>
+      <text x="650" y="119" font-size="11" fill="currentColor" fill-opacity=".62">bearer auth · error envelope · pagination</text>
+
+      <rect x="636" y="140" width="308" height="62" rx="9" style="fill: var(--surface)" stroke="currentColor" stroke-opacity=".3"/>
+      <text x="650" y="159" font-size="12.5" font-weight="700" fill="currentColor">Engines</text>
+      <text x="650" y="175" font-size="11" fill="currentColor" fill-opacity=".62">rotating tokens · OTP throttle · idempotent swipes</text>
+      <text x="650" y="191" font-size="11" fill="currentColor" fill-opacity=".62">moderation timers · bot replies + read receipts</text>
+
+      <rect x="636" y="212" width="148" height="52" rx="9" style="fill: var(--surface)" stroke="currentColor" stroke-opacity=".3"/>
+      <text x="650" y="231" font-size="12.5" font-weight="700" fill="currentColor">Hub</text>
+      <text x="650" y="247" font-size="11" fill="currentColor" fill-opacity=".62">WS conns · 30s ping</text>
+
+      <rect x="796" y="212" width="148" height="52" rx="9" style="fill: var(--surface)" stroke="currentColor" stroke-opacity=".3"/>
+      <text x="810" y="231" font-size="12.5" font-weight="700" fill="currentColor">Store</text>
+      <text x="810" y="247" font-size="11" fill="currentColor" fill-opacity=".62">in-memory · mutex</text>
+
+      <rect x="636" y="276" width="308" height="44" rx="9" style="fill: var(--surface)" stroke="currentColor" stroke-opacity=".3"/>
+      <text x="650" y="294" font-size="12.5" font-weight="700" fill="currentColor">Static serving + PUT /v1/uploads/{key}</text>
+      <text x="650" y="310" font-size="11" fill="currentColor" fill-opacity=".62">serves index.html · presigned “S3” uploads</text>
+
+      <rect x="636" y="336" width="308" height="52" rx="9" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-dasharray="5 4"/>
+      <text x="650" y="356" font-size="12.5" font-weight="700" fill="currentColor" fill-opacity=".7">Postgres · Redis · S3/CDN</text>
+      <text x="650" y="372" font-size="11" fill="currentColor" fill-opacity=".55">production seam — swaps in behind Store</text>
+      <line x1="870" y1="264" x2="870" y2="336" stroke="currentColor" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+
+      <!-- ===== client <-> server edges ===== -->
+      <line x1="304" y1="230" x2="620" y2="110" stroke="currentColor" marker-end="url(#arr)"/>
+      <text x="462" y="152" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">fetch /v1/* — Bearer token</text>
+
+      <line x1="304" y1="248" x2="620" y2="234" stroke="currentColor" marker-end="url(#arr)" marker-start="url(#arr)"/>
+      <text x="462" y="230" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">WebSocket /v1/ws?token=…</text>
+      <text x="462" y="245" font-size="10.5" fill="currentColor" fill-opacity=".62" text-anchor="middle">frames · reconnect 1s→30s backoff</text>
+
+      <line x1="620" y1="300" x2="308" y2="300" stroke="currentColor" marker-end="url(#arr)"/>
+      <text x="462" y="292" font-size="11" fill="currentColor" fill-opacity=".75" text-anchor="middle">serves the client at /</text>
+
+      <!-- ===== contract spine ===== -->
+      <rect x="360" y="404" width="260" height="82" rx="12" style="fill: var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="490" y="437" font-size="13.5" font-weight="800" text-anchor="middle" fill="currentColor">02-api-contract.md</text>
+      <text x="490" y="456" font-size="11" text-anchor="middle" fill="currentColor" fill-opacity=".7">24 REST routes · 7 WS frame types</text>
+      <text x="490" y="471" font-size="11" text-anchor="middle" fill="currentColor" fill-opacity=".7">error envelope · cursor pagination</text>
+
+      <line x1="324" y1="440" x2="360" y2="440" stroke="var(--accent)" marker-end="url(#arrA)"/>
+      <text x="342" y="428" font-size="10.5" font-weight="700" style="fill: var(--accent)" text-anchor="middle">implements</text>
+      <line x1="702" y1="404" x2="588" y2="404" stroke="var(--accent)" stroke-opacity="0"/>
+      <line x1="700" y1="410" x2="622" y2="434" stroke="var(--accent)" marker-end="url(#arrA)"/>
+      <text x="676" y="436" font-size="10.5" font-weight="700" style="fill: var(--accent)" text-anchor="start">implements</text>
+
+      <!-- ===== future client ===== -->
+      <rect x="20" y="524" width="300" height="72" rx="14" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-dasharray="5 4"/>
+      <text x="36" y="552" font-size="13.5" font-weight="700" fill="currentColor" fill-opacity=".7">SwiftUI client — M7</text>
+      <text x="36" y="570" font-size="11" fill="currentColor" fill-opacity=".55">planned; needs an Xcode environment</text>
+      <line x1="324" y1="560" x2="700" y2="560" stroke="currentColor" stroke-dasharray="5 4"/>
+      <line x1="700" y1="560" x2="820" y2="410" stroke="currentColor" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+      <text x="512" y="552" font-size="11" fill="currentColor" fill-opacity=".62" text-anchor="middle">same contract, same server</text>
+    </svg>
+    <figcaption>The UI code is identical in both modes: at boot the client probes
+    <code>GET /v1/healthz</code>; served by the Go server it speaks real fetch + WebSocket,
+    anywhere else (file://, the published artifact) it falls back to the in-page mock backend.
+    Both backends implement the same contract, and the conformance suite runs against each.</figcaption>
+  </figure>
+  </div>
+
+  <div class="cols">
+    <div class="note"><strong>Why two backends?</strong>
+      <p>The published prototype runs in a sandbox that blocks network calls, so it carries its
+      own backend. The Go server exists so the same client can be exercised against a real
+      process — swapping in production infrastructure is a transport change, not a rewrite.</p></div>
+    <div class="note"><strong>Parity is tested, not assumed</strong>
+      <p><code>test-api.js</code> checks the contract against the mock; <code>test-server.js</code>
+      boots the Go binary and re-checks it over real HTTP, then drives the served client through
+      signup → match → chat on a live WebSocket.</p></div>
+    <div class="note"><strong>Where production plugs in</strong>
+      <p>The Go store is a mutex-guarded in-memory struct behind serializers. Postgres (records),
+      Redis (presence/throttles), and S3/CDN (photos) replace it behind the same route handlers.</p></div>
+  </div>
+
+  <h2>Message round trip</h2>
+  <p class="sub">The one flow that exercises most of the machine — identical over the mock's
+  simulated frames and the real WebSocket.</p>
+
+  <div class="diagram-card">
+  <figure>
+    <svg viewBox="0 0 900 300" role="img" aria-label="Chat message sequence: the client sends message.send with a client id over the WebSocket; the backend echoes message.new with the same client id; the bot engine replies with another message.new after 1.3 to 2 seconds; then message.read arrives and the client renders the Read receipt." style="color: var(--ink); font-family: var(--font-body);">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <text x="150" y="34" font-size="13" font-weight="800" text-anchor="middle" fill="currentColor">CLIENT</text>
+      <text x="750" y="34" font-size="13" font-weight="800" text-anchor="middle" fill="currentColor">BACKEND (mock or Go)</text>
+      <line x1="150" y1="46" x2="150" y2="280" stroke="currentColor" stroke-opacity=".35"/>
+      <line x1="750" y1="46" x2="750" y2="280" stroke="currentColor" stroke-opacity=".35"/>
+
+      <line x1="150" y1="72" x2="750" y2="72" stroke="currentColor" marker-end="url(#arr2)"/>
+      <text x="450" y="63" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">message.send { match_id, body, client_id }</text>
+
+      <line x1="750" y1="116" x2="150" y2="116" stroke="currentColor" marker-end="url(#arr2)"/>
+      <text x="450" y="107" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">message.new — echoes client_id</text>
+      <text x="450" y="131" font-size="10.5" text-anchor="middle" fill="currentColor" fill-opacity=".62">optimistic bubble reconciled; sender sees the message</text>
+
+      <line x1="750" y1="180" x2="150" y2="180" stroke="currentColor" marker-end="url(#arr2)"/>
+      <text x="450" y="171" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">message.new — bot reply</text>
+      <text x="450" y="195" font-size="10.5" text-anchor="middle" fill="currentColor" fill-opacity=".62">bot engine, 1.3–2.0s later · typing indicator clears</text>
+
+      <line x1="750" y1="244" x2="150" y2="244" stroke="currentColor" marker-end="url(#arr2)"/>
+      <text x="450" y="235" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">message.read { last_message_id, reader_id }</text>
+      <text x="450" y="259" font-size="10.5" text-anchor="middle" fill="currentColor" fill-opacity=".62">“Read” receipt renders on the sender's last seen bubble</text>
+    </svg>
+    <figcaption>If the socket is down, <code>POST /matches/{id}/messages</code> is the REST
+    fallback with the same <code>client_id</code> reconciliation — sends are idempotent to retry.</figcaption>
+  </figure>
+  </div>
+
+  <h2>API surface</h2>
+  <p class="sub">Every route in the contract is initialized in <em>both</em> backends and
+  covered by the conformance suites. “Mock” is the in-page backend, “Go” the reference server;
+  the last column names the suite that locks the behavior.</p>
+
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Endpoint</th><th>Purpose</th><th>Status</th><th>Guarded by</th></tr></thead>
+    <tbody>
+      <tr class="group-row"><td colspan="4">Auth + session</td></tr>
+      <tr><td><code>POST /otp/request</code></td><td class="purpose">Send code; E.164; throttled 3/min with <code>retry_after_s</code></td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · auth · server</span></td></tr>
+      <tr><td><code>POST /otp/verify</code></td><td class="purpose">Token pair + <code>user.onboarding_state</code> routing</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · auth · server</span></td></tr>
+      <tr><td><code>POST /auth/refresh</code></td><td class="purpose">Rotating pair; old refresh token dies on use</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · server</span></td></tr>
+      <tr><td><code>POST /auth/logout</code></td><td class="purpose">Invalidate refresh token; client wipes session</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">auth · settings</span></td></tr>
+      <tr><td><code>POST /devices</code></td><td class="purpose">Push-token registration (mock token in prototype)</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">settings</span></td></tr>
+
+      <tr class="group-row"><td colspan="4">Profile, preferences, photos</td></tr>
+      <tr><td><code>GET /me</code></td><td class="purpose">Profile, preferences, photos, onboarding state</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · profile</span></td></tr>
+      <tr><td><code>PATCH /me/profile</code></td><td class="purpose">Name/birthdate/gender/bio; server-enforced <code>underage</code>; completes onboarding</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · auth · server</span></td></tr>
+      <tr><td><code>PUT /me/preferences</code></td><td class="purpose">Age range, distance, genders (+ interests extension)</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">filters</span></td></tr>
+      <tr><td><code>PUT /me/location</code></td><td class="purpose">Stored server-side only; never rendered</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">auth (flow)</span></td></tr>
+      <tr><td><code>POST /me/photos/presign</code> → <code>PUT upload_url</code> → <code>POST /me/photos/confirm</code></td>
+        <td class="purpose">Presigned upload flow; confirm returns <code>moderation_status: pending</code></td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">photos · server</span></td></tr>
+      <tr><td><code>PATCH /me/photos/order</code> · <code>DELETE /me/photos/{id}</code></td><td class="purpose">Reorder (first photo leads the card) and remove</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">photos</span></td></tr>
+
+      <tr class="group-row"><td colspan="4">Discovery + matching</td></tr>
+      <tr><td><code>GET /feed?limit=</code></td><td class="purpose">Pre-filtered candidates; excludes swiped/blocked/matched; approved photos only</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · discovery · filters</span></td></tr>
+      <tr><td><code>POST /swipes</code></td><td class="purpose">Idempotent on (user, target); returns <code>match | null</code></td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · matching · server</span></td></tr>
+
+      <tr class="group-row"><td colspan="4">Matches + chat</td></tr>
+      <tr><td><code>GET /matches</code></td><td class="purpose">Sorted by last activity; unread counts; read seq</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">chat</span></td></tr>
+      <tr><td><code>DELETE /matches/{id}</code></td><td class="purpose">Unmatch; <code>match.closed</code> to both sides</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · matching</span></td></tr>
+      <tr><td><code>GET /matches/{id}/messages</code></td><td class="purpose">Newest-first, cursor pagination (<code>?limit=&amp;before=</code>)</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · server</span></td></tr>
+      <tr><td><code>POST /matches/{id}/messages</code></td><td class="purpose">REST fallback when the socket is down; echoes <code>client_id</code></td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · server</span></td></tr>
+      <tr><td><code>POST /matches/{id}/read</code></td><td class="purpose">Clears unread; advances the reader's seq</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · chat</span></td></tr>
+
+      <tr class="group-row"><td colspan="4">Safety + account</td></tr>
+      <tr><td><code>POST /blocks</code></td><td class="purpose">Both directions, immediate; ends feed/matches/chat</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">safety · server</span></td></tr>
+      <tr><td><code>POST /reports</code></td><td class="purpose">Validated <code>ReportReason</code> enum + optional detail</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · safety</span></td></tr>
+      <tr><td><code>DELETE /me</code></td><td class="purpose">Account deletion; tokens die; matches close as <code>account_deleted</code></td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · settings · server</span></td></tr>
+      <tr><td><code>POST /me/export</code></td><td class="purpose">Returns <code>202</code>; prototype also shows the JSON in-app</td>
+        <td><div class="pills"><span class="pill ok">✓ Mock</span><span class="pill ok">✓ Go</span></div></td><td><span class="pill test">api · settings</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>WebSocket frames</h2>
+  <p class="sub">Frame shape <code>{ type, data, client_id? }</code> over
+  <code>/v1/ws?token=…</code>. The mock delivers the same frames in-page; the Go server
+  delivers them over a real socket with a 30-second heartbeat.</p>
+
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Direction</th><th>Frame</th><th>Behavior</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>client →</td><td><code>message.send</code></td><td class="purpose">Send into a match; REST fallback exists</td><td><span class="pill ok">✓ Live</span></td></tr>
+      <tr><td>client →</td><td><code>message.read</code></td><td class="purpose">Mark thread read (client also uses the REST read)</td><td><span class="pill ok">✓ Live</span></td></tr>
+      <tr><td>client →</td><td><code>pong</code></td><td class="purpose">Heartbeat reply to the server's <code>ping</code></td><td><span class="pill ok">✓ Live</span></td></tr>
+      <tr><td>→ client</td><td><code>message.new</code></td><td class="purpose">Echoes <code>client_id</code> for optimistic reconciliation</td><td><span class="pill ok">✓ Live</span></td></tr>
+      <tr><td>→ client</td><td><code>message.read</code></td><td class="purpose">Drives the “Read” receipt</td><td><span class="pill ok">✓ Live</span></td></tr>
+      <tr><td>→ client</td><td><code>match.new</code></td><td class="purpose">Asynchronous match delivery</td><td><span class="pill ok">✓ Live</span></td></tr>
+      <tr><td>→ client</td><td><code>match.closed</code></td><td class="purpose">Unmatched / blocked / account deleted → “This conversation has ended.”</td><td><span class="pill ok">✓ Live</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Error codes the UI branches on</h2>
+  <p class="sub">Contract envelope: <code>{ "error": { "code", "message", "retry_after_s"? } }</code> on every non-2xx.</p>
+  <div class="chips">
+    <span class="err-chip ok"><code>token_expired</code><span class="state">✓ refresh + replay</span></span>
+    <span class="err-chip ok"><code>invalid_otp</code><span class="state">✓ inline error</span></span>
+    <span class="err-chip ok"><code>otp_throttled</code><span class="state">✓ resend cooldown</span></span>
+    <span class="err-chip ok"><code>underage</code><span class="state">✓ hard stop</span></span>
+    <span class="err-chip ok"><code>match_closed</code><span class="state">✓ thread ends</span></span>
+    <span class="err-chip ok"><code>validation_failed</code><span class="state">✓ inline error</span></span>
+    <span class="err-chip ok"><code>not_found</code><span class="state">✓ generic + retry</span></span>
+    <span class="err-chip pend"><code>banned</code><span class="state">○ wall pending</span></span>
+    <span class="err-chip pend"><code>rate_limited</code><span class="state">○ deck interstitial pending</span></span>
+    <span class="err-chip pend"><code>blocked</code> · <code>photo_rejected</code><span class="state">○ not yet emitted</span></span>
+  </div>
+
+  <footer>Maktub prototype · <code>dating-app/</code> on branch <code>claude/dating-app-bvd8yy</code> ·
+  companion page: <em>Maktub Progress</em> · verified by 11 suites / 102 tests (all green)</footer>
+</div>
+<!-- ARTIFACT-BODY-END -->
+</body>
+</html>
